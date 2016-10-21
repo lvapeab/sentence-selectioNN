@@ -20,43 +20,34 @@ def build_dataset(params):
         ##### OUTPUT DATA
         # Let's load the train, val and test splits of the target language sentences (outputs)
         #    the files include a sentence per line.
-
-        ds.setOutput(base_path+'/'+params['CLASS_FILES']['train'], 'train',
-                   type='categorical', id=params['OUTPUTS_IDS_DATASET'][0],
-                   sample_weights=params['SAMPLE_WEIGHTS'])
-
-        ds.setOutput(base_path+'/'+params['CLASS_FILES']['val'], 'val',
-                   type='categorical', id=params['OUTPUTS_IDS_DATASET'][0],
-                   sample_weights=params['SAMPLE_WEIGHTS'])
-
-        ds.setOutput(base_path+'/'+params['CLASS_FILES']['test'], 'test',
-                   type='categorical', id=params['OUTPUTS_IDS_DATASET'][0],
-                   sample_weights=params['SAMPLE_WEIGHTS'])
+        for split in params['CLASS_FILES'].keys():
+            ds.setOutput(base_path+'/'+params['CLASS_FILES'][split], split,
+                       type='categorical', id=params['OUTPUTS_IDS_DATASET'][0],
+                       sample_weights=params['SAMPLE_WEIGHTS'])
 
         # INPUT DATA
-        for split in ['train', 'val', 'test']:
-            if params['TEXT_FILES'].get(split) is not None:
+        for split in params['TEXT_FILES'].keys():
+            if split == 'train':
+                build_vocabulary = True
+            else:
+                build_vocabulary = False
+
+            ds.setInput(base_path+'/'+params['TEXT_FILES'][split]+params['SRC_LAN'], split,
+                       type='text', id=params['INPUTS_IDS_DATASET'][0], pad_on_batch=True,
+                       tokenization=params['TOKENIZATION_METHOD'], build_vocabulary=build_vocabulary,
+                       fill=params['FILL'], max_text_len=params['MAX_INPUT_TEXT_LEN'],
+                       max_words=params['INPUT_VOCABULARY_SIZE'], min_occ=params['MIN_OCCURRENCES_VOCAB'])
+
+            if len(params['INPUTS_IDS_DATASET']) > 1:
                 if split == 'train':
-                    build_vocabulary = True
+                    ds.setInput(base_path+'/'+params['TEXT_FILES'][split]+params['TRG_LAN'], split,
+                               type='text', id=params['INPUTS_IDS_DATASET'][1], required=False,
+                               tokenization=params['TOKENIZATION_METHOD'], pad_on_batch=True,
+                               build_vocabulary=params['OUTPUTS_IDS_DATASET'][0], offset=1,
+                               fill=params['FILL'],
+                               max_text_len=params['MAX_OUTPUT_TEXT_LEN'], max_words=params['OUTPUT_VOCABULARY_SIZE'])
                 else:
-                    build_vocabulary = False
-
-                ds.setInput(base_path+'/'+params['TEXT_FILES'][split]+params['SRC_LAN'], split,
-                           type='text', id=params['INPUTS_IDS_DATASET'][0], pad_on_batch=True,
-                           tokenization=params['TOKENIZATION_METHOD'], build_vocabulary=build_vocabulary,
-                           fill=params['FILL'], max_text_len=params['MAX_INPUT_TEXT_LEN'],
-                           max_words=params['INPUT_VOCABULARY_SIZE'], min_occ=params['MIN_OCCURRENCES_VOCAB'])
-
-                if len(params['INPUTS_IDS_DATASET']) > 1:
-                    if split == 'train':
-                        ds.setInput(base_path+'/'+params['TEXT_FILES'][split]+params['TRG_LAN'], split,
-                                   type='text', id=params['INPUTS_IDS_DATASET'][1], required=False,
-                                   tokenization=params['TOKENIZATION_METHOD'], pad_on_batch=True,
-                                   build_vocabulary=params['OUTPUTS_IDS_DATASET'][0], offset=1,
-                                   fill=params['FILL'],
-                                   max_text_len=params['MAX_OUTPUT_TEXT_LEN'], max_words=params['OUTPUT_VOCABULARY_SIZE'])
-                    else:
-                        ds.setInput(None, split, type='ghost', id=params['INPUTS_IDS_DATASET'][-1], required=False)
+                    ds.setInput(None, split, type='ghost', id=params['INPUTS_IDS_DATASET'][-1], required=False)
 
 
         keep_n_captions(ds, repeat=1, n=1, set_names=['val','test'])
