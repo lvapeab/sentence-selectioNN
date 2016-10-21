@@ -1,13 +1,15 @@
 # CNN_Sel
-Theano + Keras sentence classification
+Theano + Keras sentence classification.
+
 Based on "[Convolutional Neural Networks for Sentence Classification](http://www.aclweb.org/anthology/D14-1181)".
 
 Built upon our fork of [Keras](https://github.com/MarcBS/keras) framework and tested for the [Theano](http://deeplearning.net/software/theano)
 backend.
 
-## Features:
-
+## Features
+WIP
 ## Architecture
+WIP
 
 ## Installation
 
@@ -18,14 +20,24 @@ CNN_Sel requires the following libraries:
 
 ## Instructions:
 
+
+Assuming you have a dataset with sentences and classesframes:
+
+1) Check out the inputs/outputs of your model in `data_engine/prepare_data.py`
+
+2) Set a model configuration in  `config.py`
+
+3) Train!:
+
+  ``
+ python main.py
+ ``
+
+
 ## Citation
 
 ```
 ```
-
-## About
-
-
 
 ## Contact
 
