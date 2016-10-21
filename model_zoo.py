@@ -311,10 +311,18 @@ class Text_Classification_Model(CNN_Model):
         self.ids_inputs = params['INPUTS_IDS_MODEL']
         self.ids_outputs =  params['OUTPUTS_IDS_MODEL']
 
+        # Prepare GLOVE vectors for text embedding initialization
+        embedding_weights = np.random.rand(params['INPUT_VOCABULARY_SIZE'], params['TEXT_EMBEDDING_HIDDEN_SIZE'])
+        for word, index in self.vocabularies[self.ids_inputs[0]]['words2idx'].iteritems():
+            if self.word_vectors.get(word) is not None:
+                embedding_weights[index, :] = self.word_vectors[word]
+        self.word_vectors = {}
+
         # Source text
         src_text = Input(name=self.ids_inputs[0], batch_shape=tuple([None, None]), dtype='int32')
         src_embedding = Embedding(params['INPUT_VOCABULARY_SIZE'], params['TEXT_EMBEDDING_HIDDEN_SIZE'],
-                        name='source_word_embedding',
+                        name='source_word_embedding', weights=[embedding_weights],
+                        trainable=params['GLOVE_VECTORS_TRAINABLE'],
                         W_regularizer=l2(params['WEIGHT_DECAY']),
                         mask_zero=True)(src_text)
 

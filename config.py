@@ -5,19 +5,18 @@ def load_parameters():
     '''
 
     # Input data params
-    DATASET_NAME = 'turista'
+    DATASET_NAME = 'cnn_polarity'
     FILL = 'end'                                  # whether we fill the 'end' or the 'start' of the sentence with 0s
-    SRC_LAN = 'es'                                # Language of the outputs
+    SRC_LAN = 'sh'                                # Language of the outputs
 
     DATA_ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
 
     # SRC_LAN or TRG_LAN will be added to the file names
     TEXT_FILES = {'train': 'DATA/training.',
-                  'val': 'DATA/dev.',
-                  'test': 'DATA/test.'}
+                  'val': 'DATA/val.'}
+
     CLASS_FILES = {'train': 'DATA/training.class',
-                   'val': 'DATA/dev.class',
-                   'test': 'DATA/test.class'}
+                   'val': 'DATA/val.class'}
 
     # Dataset parameters
     INPUTS_IDS_DATASET = ['input_text']       # Corresponding inputs of the dataset
@@ -31,7 +30,7 @@ def load_parameters():
     EVAL_ON_SETS_KERAS = []                       # Possible values: 'train', 'val' and 'test' (Keras' evaluator)
     START_EVAL_ON_EPOCH = 1                       # First epoch where the model will be evaluated
     EVAL_EACH_EPOCHS = True                       # Select whether evaluate between N epochs or N updates
-    EVAL_EACH = 2                                 # Sets the evaluation frequency (epochs or updates)
+    EVAL_EACH = 1                                 # Sets the evaluation frequency (epochs or updates)
 
     # Sampling params: Show some samples during training
     SAMPLE_ON_SETS = []                           # Possible values: 'train', 'val' and 'test'
@@ -74,7 +73,7 @@ def load_parameters():
 
     # Training parameters
     MAX_EPOCH = 500          # Stop when computed this number of epochs
-    BATCH_SIZE = 80
+    BATCH_SIZE = 160
 
     HOMOGENEOUS_BATCHES = False # Use batches with homogeneous output lengths for every minibatch (Dangerous)
     PARALLEL_LOADERS = 8        # Parallel data batch loaders
@@ -90,9 +89,9 @@ def load_parameters():
     N_CLASSES = 2
 
     # Model parameters
-    MODEL_TYPE = 'BLSTM_Classifier'
+    MODEL_TYPE = 'CNN_Classifier'
 
-    GLOVE_VECTORS = None              # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
+    GLOVE_VECTORS = None #'/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
     GLOVE_VECTORS_TRAINABLE = True    # Finetune or not the word embedding vectors.
     TEXT_EMBEDDING_HIDDEN_SIZE = 300  # When using pretrained word embeddings, this parameter must match with the word embeddings size
 
