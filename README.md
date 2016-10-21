@@ -1,7 +1,7 @@
 # CNN_Sel
 Theano + Keras sentence classification.
 
-Based on "[Convolutional Neural Networks for Sentence Classification](http://www.aclweb.org/anthology/D14-1181)".
+Based on the EMNLP paper "[Convolutional Neural Networks for Sentence Classification](http://www.aclweb.org/anthology/D14-1181)".
 
 Built upon our fork of [Keras](https://github.com/MarcBS/keras) framework and tested for the [Theano](http://deeplearning.net/software/theano)
 backend.
