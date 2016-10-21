@@ -26,12 +26,11 @@ def train_model(params):
     ########### Load data
     dataset = build_dataset(params)
     params['INPUT_VOCABULARY_SIZE'] = dataset.vocabulary_len[params['INPUTS_IDS_DATASET'][0]]
-    params['OUTPUT_VOCABULARY_SIZE'] = dataset.vocabulary_len[params['OUTPUTS_IDS_DATASET'][0]]
     ###########
 
     ########### Build model
     if(params['RELOAD'] == 0): # build new model
-        nmt_model = Text_Classification_Model(params, type=params['MODEL_TYPE'], verbose=params['VERBOSE'],
+        text_class_model = Text_Classification_Model(params, type=params['MODEL_TYPE'], verbose=params['VERBOSE'],
                                               model_name=params['MODEL_NAME'], vocabularies=dataset.vocabulary,
                                               store_path=params['STORE_PATH'])
 
@@ -39,25 +38,25 @@ def train_model(params):
         inputMapping = dict()
         for i, id_in in enumerate(params['INPUTS_IDS_DATASET']):
             pos_source = dataset.ids_inputs.index(id_in)
-            id_dest = nmt_model.ids_inputs[i]
+            id_dest = text_class_model.ids_inputs[i]
             inputMapping[id_dest] = pos_source
-        nmt_model.setInputsMapping(inputMapping)
+        text_class_model.setInputsMapping(inputMapping)
 
         outputMapping = dict()
         for i, id_out in enumerate(params['OUTPUTS_IDS_DATASET']):
             pos_target = dataset.ids_outputs.index(id_out)
-            id_dest = nmt_model.ids_outputs[i]
+            id_dest = text_class_model.ids_outputs[i]
             outputMapping[id_dest] = pos_target
-        nmt_model.setOutputsMapping(outputMapping)
+        text_class_model.setOutputsMapping(outputMapping)
 
     else: # resume from previously trained model
-        nmt_model = loadModel(params['STORE_PATH'], params['RELOAD'])
-        nmt_model.setOptimizer()
+        text_class_model = loadModel(params['STORE_PATH'], params['RELOAD'])
+        text_class_model.setOptimizer()
     ###########
 
 
     ########### Callbacks
-    callbacks = buildCallbacks(params, nmt_model, dataset)
+    callbacks = buildCallbacks(params, text_class_model, dataset)
     ###########
 
 
@@ -66,13 +65,13 @@ def train_model(params):
 
     logger.debug('Starting training!')
     training_params = {'n_epochs': params['MAX_EPOCH'], 'batch_size': params['BATCH_SIZE'],
-                       'homogeneous_batches':params['HOMOGENEOUS_BATCHES'], 'maxlen': params['MAX_OUTPUT_TEXT_LEN'],
+                       'homogeneous_batches':params['HOMOGENEOUS_BATCHES'],
                        'lr_decay': params['LR_DECAY'], 'lr_gamma': params['LR_GAMMA'],
                        'epochs_for_save': params['EPOCHS_FOR_SAVE'], 'verbose': params['VERBOSE'],
                        'eval_on_sets': params['EVAL_ON_SETS_KERAS'], 'n_parallel_loaders': params['PARALLEL_LOADERS'],
                        'extra_callbacks': callbacks, 'reload_epoch': params['RELOAD'],
                        'data_augmentation': params['DATA_AUGMENTATION']}
-    nmt_model.trainNet(dataset, training_params)
+    text_class_model.trainNet(dataset, training_params)
 
 
     total_end_time = timer()
@@ -82,7 +81,7 @@ def train_model(params):
 
 
 
-def apply_NMT_model(params):
+def apply_Clas_model(params):
     """
         Function for using a previously trained model for sampling.
     """
@@ -95,8 +94,8 @@ def apply_NMT_model(params):
 
 
     ########### Load model
-    nmt_model = loadModel(params['STORE_PATH'], params['RELOAD'])
-    nmt_model.setOptimizer()
+    text_class_model = loadModel(params['STORE_PATH'], params['RELOAD'])
+    text_class_model.setOptimizer()
     ###########
 
 
@@ -109,28 +108,10 @@ def apply_NMT_model(params):
         params_prediction = {'batch_size': params['BATCH_SIZE'],
                              'n_parallel_loaders': params['PARALLEL_LOADERS'], 'predict_on_sets': [s]}
 
-        # Convert predictions into sentences
-        vocab = dataset.vocabulary[params['OUTPUTS_IDS_DATASET'][0]]['idx2words']
-
-        if params['BEAM_SEARCH']:
-            params_prediction['beam_size'] = params['BEAM_SIZE']
-            params_prediction['maxlen'] = params['MAX_OUTPUT_TEXT_LEN']
-            params_prediction['model_inputs'] = params['INPUTS_IDS_MODEL']
-            params_prediction['model_outputs'] = params['OUTPUTS_IDS_MODEL']
-            params_prediction['dataset_inputs'] = params['INPUTS_IDS_DATASET']
-            params_prediction['dataset_outputs'] = params['OUTPUTS_IDS_DATASET']
-            params_prediction['normalize'] = params['NORMALIZE_SAMPLING']
-            params_prediction['alpha_factor'] = params['ALPHA_FACTOR']
-
-            predictions = nmt_model.BeamSearchNet(dataset, params_prediction)[s]
-            predictions = nmt_model.decode_predictions_beam_search(predictions, vocab, verbose=params['VERBOSE'])
-        else:
-            predictions = nmt_model.predictNet(dataset, params_prediction)[s]
-            predictions = nmt_model.decode_predictions(predictions, 1, # always set temperature to 1
-                                                                vocab, params['SAMPLING'], verbose=params['VERBOSE'])
+        predictions = text_class_model.predictNet(dataset, params_prediction)[s]
 
         # Store result
-        filepath = nmt_model.model_path+'/'+ s +'_sampling.pred' # results file
+        filepath = text_class_model.model_path+'/'+ s +'.pred' # results file
         if params['SAMPLING_SAVE_MODE'] == 'list':
             utils.read_write.list2file(filepath, predictions)
         else:
@@ -140,7 +121,7 @@ def apply_NMT_model(params):
         # Evaluate if any metric in params['METRICS']
         for metric in params['METRICS']:
             logging.info('Evaluating on metric ' + metric)
-            filepath = nmt_model.model_path + '/' + s + '_sampling.' + metric  # results file
+            filepath = text_class_model.model_path + '/' + s + '_sampling.' + metric  # results file
 
             # Evaluate on the chosen metric
             extra_vars[s] = dict()
@@ -170,25 +151,15 @@ def buildCallbacks(params, model, dataset):
     """
 
     callbacks = []
-    """
+
     if params['METRICS']:
         # Evaluate training
-        extra_vars = {'language': params['TRG_LAN'], 'n_parallel_loaders': params['PARALLEL_LOADERS'],
-                      'tokenize_f': eval('dataset.' + params['TOKENIZATION_METHOD'])}
-        vocab = dataset.vocabulary[params['OUTPUTS_IDS_DATASET'][0]]['idx2words']
+        extra_vars = {'n_parallel_loaders': params['PARALLEL_LOADERS']}
         for s in params['EVAL_ON_SETS']:
             extra_vars[s] = dict()
             extra_vars[s]['references'] = dataset.extra_variables[s][params['OUTPUTS_IDS_DATASET'][0]]
-        if params['BEAM_SIZE']:
-            extra_vars['beam_size'] = params['BEAM_SIZE']
-            extra_vars['maxlen'] = params['MAX_OUTPUT_TEXT_LEN']
-            extra_vars['model_inputs'] = params['INPUTS_IDS_MODEL']
-            extra_vars['model_outputs'] = params['OUTPUTS_IDS_MODEL']
-            extra_vars['dataset_inputs'] = params['INPUTS_IDS_DATASET']
-            extra_vars['dataset_outputs'] = params['OUTPUTS_IDS_DATASET']
-            extra_vars['normalize'] =  params['NORMALIZE_SAMPLING']
-            extra_vars['alpha_factor'] =  params['ALPHA_FACTOR']
 
+        raise Exception, "TODO: Validation"
         if params['EVAL_EACH_EPOCHS']:
             callback_metric = utils.callbacks.PrintPerformanceMetricOnEpochEnd(model, dataset,
                                                            gt_id=params['OUTPUTS_IDS_DATASET'][0],
@@ -198,7 +169,7 @@ def buildCallbacks(params, model, dataset):
                                                            each_n_epochs=params['EVAL_EACH'],
                                                            extra_vars=extra_vars,
                                                            reload_epoch=params['RELOAD'],
-                                                           is_text=True, index2word_y=vocab, # text info
+                                                           is_text=True,
                                                            sampling_type=params['SAMPLING'], # text info
                                                            beam_search=params['BEAM_SEARCH'],
                                                            save_path=model.model_path,
@@ -233,6 +204,7 @@ def buildCallbacks(params, model, dataset):
         callbacks.append(callback_metric)
 
         if params['SAMPLE_ON_SETS']:
+            raise Exception, "TODO: \"Sampling\". We could sample 3 sentences and classify them"
             # Evaluate sampling
             extra_vars = {'language': params['TRG_LAN'], 'n_parallel_loaders': params['PARALLEL_LOADERS']}
             vocab = dataset.vocabulary[params['OUTPUTS_IDS_DATASET'][0]]['idx2words']
@@ -263,7 +235,7 @@ def buildCallbacks(params, model, dataset):
                                                                    start_sampling_on_epoch=params['START_SAMPLING_ON_EPOCH'],
                                                                    verbose=params['VERBOSE'])
             callbacks.append(callback_sampling)
-        """
+
     return callbacks
 
 
@@ -292,6 +264,6 @@ if __name__ == "__main__":
         train_model(params)
     elif(params['MODE'] == 'sampling'):
         logging.info('Running sampling.')
-        apply_NMT_model(params)
+        apply_Clas_model(params)
 
     logging.info('Done!')
