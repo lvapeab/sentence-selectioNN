@@ -305,16 +305,34 @@ class Text_Classification_Model(CNN_Model):
     #       PREDEFINED MODELS
     # ------------------------------------------------------- #
 
-    def CNN_Classifier(self, params):
-        input_name = params['INPUTS_IDS_MODEL']
-        output_name = params['OUTPUTS_IDS_MODEL']
-
-
-        # [...]
+    def BLSTM_Classifier(self, params):
 
         # Store inputs and outputs names
-        self.ids_inputs = input_name
-        self.ids_outputs = output_name
+        self.ids_inputs = params['INPUTS_IDS_MODEL']
+        self.ids_outputs =  params['OUTPUTS_IDS_MODEL']
+
+        # Source text
+        src_text = Input(name=self.ids_inputs[0], batch_shape=tuple([None, None]), dtype='int32')
+        src_embedding = Embedding(params['INPUT_VOCABULARY_SIZE'], params['TEXT_EMBEDDING_HIDDEN_SIZE'],
+                        name='source_word_embedding',
+                        W_regularizer=l2(params['WEIGHT_DECAY']),
+                        mask_zero=True)(src_text)
+
+        annotations = Bidirectional(GRU(params['LSTM_ENCODER_HIDDEN_SIZE'],
+                                             W_regularizer=l2(params['WEIGHT_DECAY']),
+                                             U_regularizer=l2(params['WEIGHT_DECAY']),
+                                             b_regularizer=l2(params['WEIGHT_DECAY']),
+                                             return_sequences=False),
+                                        name='bidirectional_encoder')(src_embedding)
+
+        # Softmax
+        output = Dense(params['N_CLASSES'],
+                       activation=params['CLASSIFIER_ACTIVATION'],
+                       name=self.ids_outputs[0],
+                       W_regularizer=l2(params['WEIGHT_DECAY']))(annotations)
+
+        self.model = Model(input=src_text, output=output)
+
 
     # ------------------------------------------------------- #
     #       SAVE/LOAD
