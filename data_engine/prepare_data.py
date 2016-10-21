@@ -33,7 +33,7 @@ def build_dataset(params):
                 build_vocabulary = False
 
             ds.setInput(base_path+'/'+params['TEXT_FILES'][split]+params['SRC_LAN'], split,
-                       type='text', id=params['INPUTS_IDS_DATASET'][0], pad_on_batch=True,
+                       type='text', id=params['INPUTS_IDS_DATASET'][0],  pad_on_batch=params['PAD_ON_BATCH'],
                        tokenization=params['TOKENIZATION_METHOD'], build_vocabulary=build_vocabulary,
                        fill=params['FILL'], max_text_len=params['MAX_INPUT_TEXT_LEN'],
                        max_words=params['INPUT_VOCABULARY_SIZE'], min_occ=params['MIN_OCCURRENCES_VOCAB'])

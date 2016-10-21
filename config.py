@@ -84,21 +84,37 @@ def load_parameters():
     # Input text parameters
     INPUT_VOCABULARY_SIZE = 0         # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
     MIN_OCCURRENCES_VOCAB = 0  # Minimum number of occurrences allowed for the words in the vocabulay. Set to 0 for using them all.
-
+    PAD_ON_BATCH = False
     # Output classes parameters
     N_CLASSES = 2
 
     # Model parameters
-    MODEL_TYPE = 'CNN_Classifier'
+    MODEL_TYPE = 'BLSTM_Classifier'
 
-    GLOVE_VECTORS = None #'/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
+    GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
     GLOVE_VECTORS_TRAINABLE = True    # Finetune or not the word embedding vectors.
     TEXT_EMBEDDING_HIDDEN_SIZE = 300  # When using pretrained word embeddings, this parameter must match with the word embeddings size
 
-    # Layer dimensions
-    LSTM_ENCODER_HIDDEN_SIZE = 289   # For models with LSTM encoder
 
-    IMG_EMBEDDING_LAYERS = []  # FC layers for visual embedding
+
+
+
+    # LSTM layers dimensions (Only used if needed)
+    LSTM_ENCODER_HIDDEN_SIZE = 289   # For models with LSTM encoder
+    INIT_LAYERS = ['tanh']      # FC layers for initializing the first LSTM state
+                                # Here we should only specify the activation function of each layer (as they have a potentially fixed size)
+                                # (e.g INIT_LAYERS = ['tanh', 'relu'])
+
+    # CNN layers parameters (Only used if needed)
+    NUM_FILTERS = 100
+    FILTER_SIZES = [3,4,5]
+    POOL_LENGTH = 2
+    CNN_ACTIVATION = 'relu'
+
+
+
+    # General architectural parameters
+    ADDITIONAL_EMBEDDING_LAYERS = []  # FC layers for visual embedding
                                # Here we should specify the activation function and the output dimension
                                # (e.g IMG_EMBEDDING_LAYERS = [('linear', 1024)]
 
@@ -108,9 +124,6 @@ def load_parameters():
                                 # Here we should specify the activation function and the output dimension
                                 # (e.g DEEP_OUTPUT_LAYERS = [('tanh', 600), ('relu',400), ('relu':200)])
 
-    INIT_LAYERS = ['tanh']      # FC layers for initializing the first LSTM state
-                                # Here we should only specify the activation function of each layer (as they have a potentially fixed size)
-                                # (e.g INIT_LAYERS = ['tanh', 'relu'])
 
     # Regularizers / Normalizers
     USE_DROPOUT = True                  # Use dropout (0.5)
@@ -121,7 +134,7 @@ def load_parameters():
     # Results plot and models storing parameters
     EXTRA_NAME = '' # This will be appended to the end of the model name
     MODEL_NAME = DATASET_NAME + '_' + MODEL_TYPE + '_txtemb_' + str(TEXT_EMBEDDING_HIDDEN_SIZE) + \
-                 '_imgemb_' + '_'.join([layer[0] for layer in IMG_EMBEDDING_LAYERS]) + \
+                 '_addemb_' + '_'.join([layer[0] for layer in ADDITIONAL_EMBEDDING_LAYERS]) + \
                  '_' + str(LSTM_ENCODER_HIDDEN_SIZE) + \
                  '_deepout_' + '_'.join([layer[0] for layer in DEEP_OUTPUT_LAYERS]) + \
                  '_' + OPTIMIZER

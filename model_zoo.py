@@ -10,7 +10,7 @@ from keras.layers.core import Dropout, Dense, Flatten, Activation, Lambda, Maxou
 from keras.models import model_from_json, Sequential, Graph, Model
 from keras.preprocessing.sequence import pad_sequences
 from keras.regularizers import l2, activity_l2
-from keras.layers.convolutional import AveragePooling1D
+from keras.layers.convolutional import AveragePooling1D, Convolution1D, MaxPooling1D
 from keras.optimizers import Adam, RMSprop, Nadam, Adadelta
 from keras import backend as K
 from keras.regularizers import l2
@@ -305,6 +305,84 @@ class Text_Classification_Model(CNN_Model):
     #       PREDEFINED MODELS
     # ------------------------------------------------------- #
 
+    def CNN_Classifier(self, params):
+
+        # Store inputs and outputs names
+        self.ids_inputs = params['INPUTS_IDS_MODEL']
+        self.ids_outputs =  params['OUTPUTS_IDS_MODEL']
+
+        # Prepare GLOVE vectors for text embedding initialization
+        embedding_weights = np.random.rand(params['INPUT_VOCABULARY_SIZE'], params['TEXT_EMBEDDING_HIDDEN_SIZE'])
+        for word, index in self.vocabularies[self.ids_inputs[0]]['words2idx'].iteritems():
+            if self.word_vectors.get(word) is not None:
+                embedding_weights[index, :] = self.word_vectors[word]
+        self.word_vectors = {}
+
+        # Source text
+        src_text = Input(name=self.ids_inputs[0], batch_shape=tuple([None, params['MAX_INPUT_TEXT_LEN']]), dtype='int32')
+        sentence_embedding = Embedding(params['INPUT_VOCABULARY_SIZE'], params['TEXT_EMBEDDING_HIDDEN_SIZE'],
+                                       name='source_word_embedding', weights=[embedding_weights],
+                                       trainable=params['GLOVE_VECTORS_TRAINABLE'],
+                                       W_regularizer=l2(params['WEIGHT_DECAY']),
+                                       mask_zero=False)(src_text)
+
+        for activation, dimension in params['ADDITIONAL_EMBEDDING_LAYERS']:
+            sentence_embedding = TimeDistributed(Dense(dimension, name='%s_1'%activation, activation=activation,
+                                               W_regularizer=l2(params['WEIGHT_DECAY'])))(sentence_embedding)
+            if params['USE_BATCH_NORMALIZATION']:
+                sentence_embedding = BatchNormalization(name='batch_normalization_image_embedding',
+                                                W_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding)
+            if params['USE_PRELU']:
+                sentence_embedding = PReLU(W_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding)
+            if params['USE_DROPOUT']:
+                sentence_embedding = Dropout(0.5)(sentence_embedding)
+            if params['USE_L2']:
+                sentence_embedding = Lambda(L2_norm)(sentence_embedding)
+
+        convolutions = []
+        for filter_len in params['FILTER_SIZES']:
+            conv = Convolution1D(nb_filter=params['NUM_FILTERS'],
+                                 filter_length=filter_len,
+                                 W_regularizer=l2(params['WEIGHT_DECAY']),
+                                 b_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding)
+            pool = MaxPooling1D(pool_length=params['POOL_LENGTH'])(conv)
+            convolutions.append(Flatten()(pool))
+        if len(convolutions) > 1:
+            out_layer = merge(convolutions, mode='concat')
+        else:
+            out_layer = convolutions[0]
+
+        # Optional deep ouput
+        for i, (activation, dimension) in enumerate(params['DEEP_OUTPUT_LAYERS']):
+            if activation.lower() == 'maxout':
+                out_layer = MaxoutDense(dimension,
+                                        W_regularizer=l2(params['WEIGHT_DECAY']),
+                                        name='maxout_%d'%i)(out_layer)
+            else:
+                out_layer = Dense(dimension,
+                                  activation=activation,
+                                  W_regularizer=l2(params['WEIGHT_DECAY']),
+                                  name=activation+'_%d'%i)(out_layer)
+
+            if params['USE_BATCH_NORMALIZATION']:
+                out_layer = BatchNormalization(name='batch_normalization_image_embedding',
+                                              W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
+            if params['USE_PRELU']:
+                out_layer = PReLU(W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
+            if params['USE_DROPOUT']:
+                out_layer = Dropout(0.5)(out_layer)
+
+        # Softmax
+        output = Dense(params['N_CLASSES'],
+                       activation=params['CLASSIFIER_ACTIVATION'],
+                       name=self.ids_outputs[0],
+                       W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
+
+        self.model = Model(input=src_text, output=output)
+
+
+
+
     def BLSTM_Classifier(self, params):
 
         # Store inputs and outputs names
@@ -320,24 +398,57 @@ class Text_Classification_Model(CNN_Model):
 
         # Source text
         src_text = Input(name=self.ids_inputs[0], batch_shape=tuple([None, None]), dtype='int32')
-        src_embedding = Embedding(params['INPUT_VOCABULARY_SIZE'], params['TEXT_EMBEDDING_HIDDEN_SIZE'],
-                        name='source_word_embedding', weights=[embedding_weights],
-                        trainable=params['GLOVE_VECTORS_TRAINABLE'],
-                        W_regularizer=l2(params['WEIGHT_DECAY']),
-                        mask_zero=True)(src_text)
+        sentence_embedding = Embedding(params['INPUT_VOCABULARY_SIZE'], params['TEXT_EMBEDDING_HIDDEN_SIZE'],
+                                       name='source_word_embedding', weights=[embedding_weights],
+                                       trainable=params['GLOVE_VECTORS_TRAINABLE'],
+                                       W_regularizer=l2(params['WEIGHT_DECAY']),
+                                       mask_zero=True)(src_text)
 
-        annotations = Bidirectional(GRU(params['LSTM_ENCODER_HIDDEN_SIZE'],
+        for activation, dimension in params['ADDITIONAL_EMBEDDING_LAYERS']:
+            sentence_embedding = TimeDistributed(Dense(dimension, name='%s_1'%activation, activation=activation,
+                                               W_regularizer=l2(params['WEIGHT_DECAY'])))(sentence_embedding)
+            if params['USE_BATCH_NORMALIZATION']:
+                sentence_embedding = BatchNormalization(name='batch_normalization_image_embedding',
+                                                W_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding)
+            if params['USE_PRELU']:
+                sentence_embedding = PReLU(W_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding)
+            if params['USE_DROPOUT']:
+                sentence_embedding = Dropout(0.5)(sentence_embedding)
+            if params['USE_L2']:
+                sentence_embedding = Lambda(L2_norm)(sentence_embedding)
+
+        out_layer = Bidirectional(LSTM(params['LSTM_ENCODER_HIDDEN_SIZE'],
                                              W_regularizer=l2(params['WEIGHT_DECAY']),
                                              U_regularizer=l2(params['WEIGHT_DECAY']),
                                              b_regularizer=l2(params['WEIGHT_DECAY']),
                                              return_sequences=False),
-                                        name='bidirectional_encoder')(src_embedding)
+                                        name='bidirectional_encoder')(sentence_embedding)
+
+        # Optional deep ouput
+        for i, (activation, dimension) in enumerate(params['DEEP_OUTPUT_LAYERS']):
+            if activation.lower() == 'maxout':
+                out_layer = MaxoutDense(dimension,
+                                        W_regularizer=l2(params['WEIGHT_DECAY']),
+                                        name='maxout_%d'%i)(out_layer)
+            else:
+                out_layer = Dense(dimension,
+                                  activation=activation,
+                                  W_regularizer=l2(params['WEIGHT_DECAY']),
+                                  name=activation+'_%d'%i)(out_layer)
+
+            if params['USE_BATCH_NORMALIZATION']:
+                out_layer = BatchNormalization(name='batch_normalization_image_embedding',
+                                              W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
+            if params['USE_PRELU']:
+                out_layer = PReLU(W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
+            if params['USE_DROPOUT']:
+                out_layer = Dropout(0.5)(out_layer)
 
         # Softmax
         output = Dense(params['N_CLASSES'],
                        activation=params['CLASSIFIER_ACTIVATION'],
                        name=self.ids_outputs[0],
-                       W_regularizer=l2(params['WEIGHT_DECAY']))(annotations)
+                       W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
 
         self.model = Model(input=src_text, output=output)
 
