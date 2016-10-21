@@ -5,10 +5,11 @@ Author: Mateusz Malinowski
 Email: mmalinow@mpi-inf.mpg.de
 
 Modified by: Marc Bola\~nos
+             \'Alvaro Peris
 """
 
 import json
-
+import numpy as np
 ###
 # Helpers
 ###
@@ -26,10 +27,14 @@ def file2list(filepath):
 
     return lines
 
+def numpy2file(filepath, mylist, permission='w'):
+    mylist = np.asarray(mylist)
+    with open(filepath, permission) as f:
+        np.save(f, mylist)
 
 def listoflists2file(filepath,mylist,permission='w'):
     mylist = [str(sublist) for sublist in mylist]
-    mylist = '\n'.join(mylist)
+    mylist = '\n'.join(str(mylist))
     if type(mylist[0]) is unicode:
         mylist=mylist.encode('utf-8')
     with open(filepath,permission) as f:
@@ -37,7 +42,7 @@ def listoflists2file(filepath,mylist,permission='w'):
 
         
 def list2file(filepath,mylist,permission='w'):
-    mylist='\n'.join(mylist)
+    mylist='\n'.join(str(mylist))
     if type(mylist[0]) is unicode:
         mylist=mylist.encode('utf-8')
     with open(filepath,permission) as f:

@@ -36,11 +36,6 @@ def get_coco_score(pred_list, verbose, extra_vars, split):
     hypo = {idx: map(extra_vars['tokenize_f'],[lines.strip()]) for (idx, lines) in enumerate(pred_list)}
     refs = {idx: map(extra_vars['tokenize_f'], gts[idx]) for idx in gts.keys()}
 
-    #refs = {key: [{'caption': extra_vars['tokenize_f'](caption), 'image_id': key, 'id': i} for i, caption in enumerate(gts[key])] for key in gts.keys()}
-    #hypo = {idx: [{'caption': extra_vars['tokenize_f'](line), 'image_id': idx, 'id': 0}] for (idx, line) in enumerate(pred_list)}
-    #tokenizer = PTBTokenizer()
-    #refs  = tokenizer.tokenize(refs)
-    #hypo = tokenizer.tokenize(hypo)
     scorers = [
         (Bleu(4), ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4"]),
         (Meteor(language=extra_vars['language']),"METEOR"),
@@ -152,7 +147,45 @@ def eval_multiclass_metrics(gt_list, pred_list, verbose, extra_vars, split):
     return {'coverage error': coverr,
             'average precision': avgprec,
             'ranking loss': rankloss}
-        
+
+def multilabel_metrics(pred_list, verbose, extra_vars, split):
+    '''
+    Multiclass classification metrics
+    see multilabel ranking metrics in sklearn library for more info:
+        http://scikit-learn.org/stable/modules/model_evaluation.html#multilabel-ranking-metrics
+
+    # Arguments
+        gt_list, dictionary of reference sentences
+        pred_list, dictionary of hypothesis sentences
+        verbose - if greater than 0 the metric measures are printed out
+        extra_vars - extra variables, here are:
+                extra_vars['word2idx'] - dictionary mapping from words to indices
+    '''
+    n_classes = extra_vars['n_classes']
+    n_samples = len(pred_list)
+    gt_list = extra_vars[split]['references']
+    pred_class_list = [np.argmax(sample_score) for sample_score in pred_list]
+    # Create prediction matrix
+    y_pred = np.zeros((n_samples, n_classes))
+    y_gt = np.zeros((n_samples, n_classes))
+    for i_s, pred_class in enumerate(pred_class_list):
+        y_pred[i_s, pred_class] = 1
+    for i_s, gt_class in enumerate(gt_list.values()):
+        y_gt[i_s, gt_class] = 1
+
+    # Compute Coverage Error
+    accuracy = sklearn_metrics.accuracy_score(y_gt, y_pred)
+    precision, recall, f1, _ = sklearn_metrics.precision_recall_fscore_support(y_gt, y_pred, average='micro')
+
+    if verbose > 0:
+        logging.info('Accuracy: %f \t Precision: %f \t Recall: %f \t F1: %f' %
+                     (accuracy, precision, recall, f1))
+
+    return {'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1': f1}
+
         
 ########################################
 # EVALUATION FUNCTIONS SELECTOR
@@ -163,6 +196,7 @@ select = {
          'vqa': eval_vqa,                        # Metric for the VQA challenge
          'coco': get_coco_score,                 # MS COCO evaluation library (BLEU, METEOR and CIDEr scores)
          'multiclass': eval_multiclass_metrics,  # Set of multiclass classification metrics from sklearn
+         'multilabel_metrics': multilabel_metrics  # Set of multilabel classification metrics from sklearn
          }
                 
                 

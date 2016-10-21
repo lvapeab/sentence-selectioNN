@@ -110,12 +110,10 @@ class PrintPerformanceMetricOnEpochEnd(KerasCallback):
                     params_prediction['alpha_factor'] =  self.extra_vars['alpha_factor']
                 if self.extra_vars.get('words_so_far'):
                     params_prediction['words_so_far'] = self.extra_vars['words_so_far']
-
                 predictions = self.model_to_eval.BeamSearchNet(self.ds, params_prediction)[s]
             else:
                 predictions = self.model_to_eval.predictNet(self.ds, params_prediction)[s]
-            gt_y = eval('self.ds.Y_'+s+'["'+self.gt_id+'"]')
-            
+
             if(self.is_text):
                 if self.out_pred_idx is not None:
                     predictions = predictions[self.out_pred_idx]
@@ -129,7 +127,6 @@ class PrintPerformanceMetricOnEpochEnd(KerasCallback):
                                                       self.index2word_y,
                                                       self.sampling_type,
                                                       verbose=self.verbose)
-            
             # Store predictions
             if self.write_samples:
                 # Store result
@@ -140,6 +137,8 @@ class PrintPerformanceMetricOnEpochEnd(KerasCallback):
                     list2vqa(filepath, predictions, self.extra_vars[s]['question_ids'])
                 elif self.write_type == 'listoflists':
                     listoflists2file(filepath, predictions)
+                elif self.write_type == 'numpy':
+                    numpy2file(filepath, predictions)
                 else:
                     raise NotImplementedError('The store type "'+self.write_type+'" is not implemented.')
 
@@ -284,7 +283,6 @@ class PrintPerformanceMetricEachNUpdates(KerasCallback):
                 predictions = self.model_to_eval.BeamSearchNet(self.ds, params_prediction)[s]
             else:
                 predictions = self.model_to_eval.predictNet(self.ds, params_prediction)[s]
-            gt_y = eval('self.ds.Y_'+s+'["'+self.gt_id+'"]')
 
             if(self.is_text):
                 if self.out_pred_idx is not None:
@@ -310,6 +308,8 @@ class PrintPerformanceMetricEachNUpdates(KerasCallback):
                     list2vqa(filepath, predictions, self.extra_vars[s]['question_ids'])
                 elif self.write_type == 'listoflists':
                     listoflists2file(filepath, predictions)
+                elif self.write_type == 'numpy':
+                    numpy2file(filepath, predictions)
                 else:
                     raise NotImplementedError('The store type "'+self.write_type+'" is not implemented.')
 
