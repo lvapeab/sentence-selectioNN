@@ -158,8 +158,9 @@ def buildCallbacks(params, model, dataset):
         for s in params['EVAL_ON_SETS']:
             extra_vars[s] = dict()
             extra_vars[s]['references'] = dataset.extra_variables[s][params['OUTPUTS_IDS_DATASET'][0]]
+            if dataset.dic_classes.get(params['OUTPUTS_IDS_DATASET'][0]):
+                extra_vars['n_classes'] = len(dataset.dic_classes[params['OUTPUTS_IDS_DATASET'][0]])
 
-        raise Exception, "TODO: Validation"
         if params['EVAL_EACH_EPOCHS']:
             callback_metric = utils.callbacks.PrintPerformanceMetricOnEpochEnd(model, dataset,
                                                            gt_id=params['OUTPUTS_IDS_DATASET'][0],
@@ -169,9 +170,6 @@ def buildCallbacks(params, model, dataset):
                                                            each_n_epochs=params['EVAL_EACH'],
                                                            extra_vars=extra_vars,
                                                            reload_epoch=params['RELOAD'],
-                                                           is_text=True,
-                                                           sampling_type=params['SAMPLING'], # text info
-                                                           beam_search=params['BEAM_SEARCH'],
                                                            save_path=model.model_path,
                                                            start_eval_on_epoch=params['START_EVAL_ON_EPOCH'],
                                                            write_samples=True,
@@ -190,9 +188,6 @@ def buildCallbacks(params, model, dataset):
                                                            each_n_updates=params['EVAL_EACH'],
                                                            extra_vars=extra_vars,
                                                            reload_epoch=params['RELOAD'],
-                                                           is_text=True, index2word_y=vocab, # text info
-                                                           sampling_type=params['SAMPLING'], # text info
-                                                           beam_search=params['BEAM_SEARCH'],
                                                            save_path=model.model_path,
                                                            start_eval_on_epoch=params['START_EVAL_ON_EPOCH'],
                                                            write_samples=True,

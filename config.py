@@ -26,12 +26,24 @@ def load_parameters():
     OUTPUTS_IDS_MODEL = ['class']             # Corresponding outputs of the built model
 
     # Evaluation params
-    METRICS = []  # Metric used for evaluating model after each epoch (leave empty if only prediction is required)
+    METRICS = ['multilabel_metrics']              # Metric used for evaluating model after each epoch (leave empty if only prediction is required)
     EVAL_ON_SETS = ['val']                        # Possible values: 'train', 'val' and 'test' (external evaluator)
     EVAL_ON_SETS_KERAS = []                       # Possible values: 'train', 'val' and 'test' (Keras' evaluator)
     START_EVAL_ON_EPOCH = 1                       # First epoch where the model will be evaluated
     EVAL_EACH_EPOCHS = True                       # Select whether evaluate between N epochs or N updates
     EVAL_EACH = 2                                 # Sets the evaluation frequency (epochs or updates)
+
+    # Sampling params: Show some samples during training
+    SAMPLE_ON_SETS = []                           # Possible values: 'train', 'val' and 'test'
+    N_SAMPLES = 5                                 # Number of samples generated
+    START_SAMPLING_ON_EPOCH = 1                   # First epoch where the model will be evaluated
+    SAMPLE_EACH_UPDATES = 2500                    # Sampling frequency (default 450)
+
+
+    # Early stop parameters
+    EARLY_STOP = True                  # Turns on/off the early stop protocol
+    PATIENCE = 10                      # We'll stop if the val STOP_METRIC does not improve after this number of evaluations
+    STOP_METRIC = 'accuracy'           # Metric for the stop
 
     # Word representation params
     TOKENIZATION_METHOD = 'tokenize_soft'         # Select which tokenization we'll apply:
@@ -120,7 +132,7 @@ def load_parameters():
     STORE_PATH = 'trained_models/' + MODEL_NAME  + '/' # Models and evaluation results will be stored here
     DATASET_STORE_PATH = 'datasets/'                   # Dataset instance will be stored here
 
-    SAMPLING_SAVE_MODE = 'list'                        # 'list' or 'vqa'
+    SAMPLING_SAVE_MODE = 'numpy'                       # 'list', 'numpy', 'vqa'
     VERBOSE = 1                                        # Verbosity level
     RELOAD = 0                                         # If 0 start training from scratch, otherwise the model
                                                        # Saved on epoch 'RELOAD' will be used
