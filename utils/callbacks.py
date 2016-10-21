@@ -92,15 +92,25 @@ class PrintPerformanceMetricOnEpochEnd(KerasCallback):
                                  'predict_on_sets': [s]}
 
             if self.beam_search:
-                params_prediction['beam_size'] = self.extra_vars['beam_size']
-                params_prediction['maxlen'] = self.extra_vars['maxlen']
-                params_prediction['model_inputs'] = self.extra_vars['model_inputs']
-                params_prediction['model_outputs'] = self.extra_vars['model_outputs']
-                params_prediction['dataset_inputs'] =  self.extra_vars['dataset_inputs']
-                params_prediction['dataset_outputs'] =  self.extra_vars['dataset_outputs']
-                params_prediction['normalize'] =  self.extra_vars['normalize']
-                params_prediction['alpha_factor'] =  self.extra_vars['alpha_factor']
-                params_prediction['words_so_far'] = self.extra_vars['words_so_far']
+                if self.extra_vars.get('beam_size'):
+                    params_prediction['beam_size'] = self.extra_vars['beam_size']
+                if self.extra_vars.get('maxlen'):
+                    params_prediction['maxlen'] = self.extra_vars['maxlen']
+                if self.extra_vars.get('model_inputs'):
+                    params_prediction['model_inputs'] = self.extra_vars['model_inputs']
+                if self.extra_vars.get('model_outputs'):
+                    params_prediction['model_outputs'] = self.extra_vars['model_outputs']
+                if self.extra_vars.get('dataset_inputs'):
+                    params_prediction['dataset_inputs'] =  self.extra_vars['dataset_inputs']
+                if self.extra_vars.get('dataset_outputs'):
+                    params_prediction['dataset_outputs'] =  self.extra_vars['dataset_outputs']
+                if self.extra_vars.get('normalize'):
+                    params_prediction['normalize'] =  self.extra_vars['normalize']
+                if self.extra_vars.get('alpha_factor'):
+                    params_prediction['alpha_factor'] =  self.extra_vars['alpha_factor']
+                if self.extra_vars.get('words_so_far'):
+                    params_prediction['words_so_far'] = self.extra_vars['words_so_far']
+
                 predictions = self.model_to_eval.BeamSearchNet(self.ds, params_prediction)[s]
             else:
                 predictions = self.model_to_eval.predictNet(self.ds, params_prediction)[s]
@@ -252,15 +262,25 @@ class PrintPerformanceMetricEachNUpdates(KerasCallback):
                                  'predict_on_sets': [s]}
 
             if self.beam_search:
-                params_prediction['beam_size'] = self.extra_vars['beam_size']
-                params_prediction['maxlen'] = self.extra_vars['maxlen']
-                params_prediction['model_inputs'] = self.extra_vars['model_inputs']
-                params_prediction['model_outputs'] = self.extra_vars['model_outputs']
-                params_prediction['dataset_inputs'] =  self.extra_vars['dataset_inputs']
-                params_prediction['dataset_outputs'] =  self.extra_vars['dataset_outputs']
-                params_prediction['normalize'] =  self.extra_vars['normalize']
-                params_prediction['alpha_factor'] =  self.extra_vars['alpha_factor']
-                params_prediction['words_so_far'] = self.extra_vars['words_so_far']
+                if self.extra_vars.get('beam_size'):
+                    params_prediction['beam_size'] = self.extra_vars['beam_size']
+                if self.extra_vars.get('maxlen'):
+                    params_prediction['maxlen'] = self.extra_vars['maxlen']
+                if self.extra_vars.get('model_inputs'):
+                    params_prediction['model_inputs'] = self.extra_vars['model_inputs']
+                if self.extra_vars.get('model_outputs'):
+                    params_prediction['model_outputs'] = self.extra_vars['model_outputs']
+                if self.extra_vars.get('dataset_inputs'):
+                    params_prediction['dataset_inputs'] =  self.extra_vars['dataset_inputs']
+                if self.extra_vars.get('dataset_outputs'):
+                    params_prediction['dataset_outputs'] =  self.extra_vars['dataset_outputs']
+                if self.extra_vars.get('normalize'):
+                    params_prediction['normalize'] =  self.extra_vars['normalize']
+                if self.extra_vars.get('alpha_factor'):
+                    params_prediction['alpha_factor'] =  self.extra_vars['alpha_factor']
+                if self.extra_vars.get('words_so_far'):
+                    params_prediction['words_so_far'] = self.extra_vars['words_so_far']
+
                 predictions = self.model_to_eval.BeamSearchNet(self.ds, params_prediction)[s]
             else:
                 predictions = self.model_to_eval.predictNet(self.ds, params_prediction)[s]
@@ -399,15 +419,25 @@ class SampleEachNUpdates(KerasCallback):
                                  'n_samples': self.n_samples}
 
             if self.beam_search:
-                params_prediction['beam_size'] = self.extra_vars['beam_size']
-                params_prediction['maxlen'] = self.extra_vars['maxlen']
-                params_prediction['model_inputs'] = self.extra_vars['model_inputs']
-                params_prediction['model_outputs'] = self.extra_vars['model_outputs']
-                params_prediction['dataset_inputs'] =  self.extra_vars['dataset_inputs']
-                params_prediction['dataset_outputs'] =  self.extra_vars['dataset_outputs']
-                params_prediction['normalize'] =  self.extra_vars['normalize']
-                params_prediction['alpha_factor'] =  self.extra_vars['alpha_factor']
-                params_prediction['words_so_far'] = self.extra_vars['words_so_far']
+                if self.extra_vars.get('beam_size'):
+                    params_prediction['beam_size'] = self.extra_vars['beam_size']
+                if self.extra_vars.get('maxlen'):
+                    params_prediction['maxlen'] = self.extra_vars['maxlen']
+                if self.extra_vars.get('model_inputs'):
+                    params_prediction['model_inputs'] = self.extra_vars['model_inputs']
+                if self.extra_vars.get('model_outputs'):
+                    params_prediction['model_outputs'] = self.extra_vars['model_outputs']
+                if self.extra_vars.get('dataset_inputs'):
+                    params_prediction['dataset_inputs'] =  self.extra_vars['dataset_inputs']
+                if self.extra_vars.get('dataset_outputs'):
+                    params_prediction['dataset_outputs'] =  self.extra_vars['dataset_outputs']
+                if self.extra_vars.get('normalize'):
+                    params_prediction['normalize'] =  self.extra_vars['normalize']
+                if self.extra_vars.get('alpha_factor'):
+                    params_prediction['alpha_factor'] =  self.extra_vars['alpha_factor']
+                if self.extra_vars.get('words_so_far'):
+                    params_prediction['words_so_far'] = self.extra_vars['words_so_far']
+
                 predictions, truths = self.model_to_eval.BeamSearchNet(self.ds, params_prediction)
             else:
                 predictions, truths = self.model_to_eval.predictNet(self.ds, params_prediction)[s]
