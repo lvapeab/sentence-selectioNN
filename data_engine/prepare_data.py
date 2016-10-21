@@ -21,24 +21,17 @@ def build_dataset(params):
         # Let's load the train, val and test splits of the target language sentences (outputs)
         #    the files include a sentence per line.
 
-        ds.setOutput(base_path+'/'+params['TEXT_FILES']['train']+params['TRG_LAN'], 'train',
-                   type='text', id=params['OUTPUTS_IDS_DATASET'][0],
-                   tokenization=params['TOKENIZATION_METHOD'], build_vocabulary=True, pad_on_batch=True,
-                   sample_weights=params['SAMPLE_WEIGHTS'],
-                   max_text_len=params['MAX_OUTPUT_TEXT_LEN'], max_words=params['OUTPUT_VOCABULARY_SIZE'],
-                   min_occ=params['MIN_OCCURRENCES_VOCAB'])
+        ds.setOutput(base_path+'/'+params['CLASS_FILES']['train'], 'train',
+                   type='categorical', id=params['OUTPUTS_IDS_DATASET'][0],
+                   sample_weights=params['SAMPLE_WEIGHTS'])
 
-        ds.setOutput(base_path+'/'+params['TEXT_FILES']['val']+params['TRG_LAN'], 'val',
-                   type='text', id=params['OUTPUTS_IDS_DATASET'][0], pad_on_batch=True,
-                   tokenization=params['TOKENIZATION_METHOD'],
-                   sample_weights=params['SAMPLE_WEIGHTS'],
-                   max_text_len=params['MAX_OUTPUT_TEXT_LEN'], max_words=params['OUTPUT_VOCABULARY_SIZE'])
+        ds.setOutput(base_path+'/'+params['CLASS_FILES']['val'], 'val',
+                   type='categorical', id=params['OUTPUTS_IDS_DATASET'][0],
+                   sample_weights=params['SAMPLE_WEIGHTS'])
 
-        ds.setOutput(base_path+'/'+params['TEXT_FILES']['test']+params['TRG_LAN'], 'test',
-                   type='text', id=params['OUTPUTS_IDS_DATASET'][0], pad_on_batch=True,
-                   tokenization=params['TOKENIZATION_METHOD'],
-                   sample_weights=params['SAMPLE_WEIGHTS'],
-                   max_text_len=params['MAX_OUTPUT_TEXT_LEN'], max_words=params['OUTPUT_VOCABULARY_SIZE'])
+        ds.setOutput(base_path+'/'+params['CLASS_FILES']['test'], 'test',
+                   type='categorical', id=params['OUTPUTS_IDS_DATASET'][0],
+                   sample_weights=params['SAMPLE_WEIGHTS'])
 
         # INPUT DATA
         for split in ['train', 'val', 'test']:
