@@ -45,11 +45,11 @@ def load_parameters():
     STOP_METRIC = 'accuracy'           # Metric for the stop
 
     # Word representation params
-    TOKENIZATION_METHOD = 'tokenize_soft'         # Select which tokenization we'll apply:
+    TOKENIZATION_METHOD = 'tokenize_none'         # Select which tokenization we'll apply:
                                                   # tokenize_basic, tokenize_aggressive, tokenize_soft,
                                                   # tokenize_icann or tokenize_questions
     # Input image parameters
-    DATA_AUGMENTATION = False                      # Apply data augmentation on input data (noise on features)
+    DATA_AUGMENTATION = False                     # Apply data augmentation on input data (noise on features)
 
     # Input text parameters
     VOCABULARY_SIZE = 0        # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
@@ -62,9 +62,6 @@ def load_parameters():
     LOSS = 'categorical_crossentropy'
     CLASS_MODE = 'categorical'
 
-    LR_DECAY = 20  # number of minimum number of epochs before the next LR decay
-    LR_GAMMA = 0.8  # multiplier used for decreasing the LR
-
     OPTIMIZER = 'Adam'      # Optimizer
     LR = 0.001              # (recommended values - Adam 0.001 - Adadelta 1.0
     WEIGHT_DECAY = 1e-4     # L2 regularization
@@ -72,19 +69,20 @@ def load_parameters():
     SAMPLE_WEIGHTS = False  # Select whether we use a weights matrix (mask) for the data outputs
 
     # Training parameters
-    MAX_EPOCH = 500          # Stop when computed this number of epochs
-    BATCH_SIZE = 160
+    MAX_EPOCH = 500         # Stop when computed this number of epochs
+    BATCH_SIZE = 160        #  Training batch size
 
-    HOMOGENEOUS_BATCHES = False # Use batches with homogeneous output lengths for every minibatch (Dangerous)
-    PARALLEL_LOADERS = 8        # Parallel data batch loaders
-    EPOCHS_FOR_SAVE = 1         # Number of epochs between model saves
-    WRITE_VALID_SAMPLES = True  # Write valid samples in file
+    HOMOGENEOUS_BATCHES = False  # Use batches with homogeneous output lengths for every minibatch (Dangerous!)
+    PARALLEL_LOADERS = 8         # Parallel data batch loaders
+    EPOCHS_FOR_SAVE = 1          # Number of epochs between model saves
+    WRITE_VALID_SAMPLES = True   # Write valid samples in file
 
 
     # Input text parameters
     INPUT_VOCABULARY_SIZE = 0         # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
     MIN_OCCURRENCES_VOCAB = 0  # Minimum number of occurrences allowed for the words in the vocabulay. Set to 0 for using them all.
     PAD_ON_BATCH = False
+
     # Output classes parameters
     N_CLASSES = 2
 
@@ -94,10 +92,6 @@ def load_parameters():
     GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
     GLOVE_VECTORS_TRAINABLE = True    # Finetune or not the word embedding vectors.
     TEXT_EMBEDDING_HIDDEN_SIZE = 300  # When using pretrained word embeddings, this parameter must match with the word embeddings size
-
-
-
-
 
     # LSTM layers dimensions (Only used if needed)
     LSTM_ENCODER_HIDDEN_SIZE = 289   # For models with LSTM encoder
@@ -111,18 +105,20 @@ def load_parameters():
     POOL_LENGTH = 2
     CNN_ACTIVATION = 'relu'
 
-
-
     # General architectural parameters
-    ADDITIONAL_EMBEDDING_LAYERS = []  # FC layers for visual embedding
-                               # Here we should specify the activation function and the output dimension
-                               # (e.g IMG_EMBEDDING_LAYERS = [('linear', 1024)]
+    # Fully-connected layers for visual embedding
+    # Here we should specify the activation function and the output dimension
+    # (e.g ADDITIONAL_EMBEDDING_LAYERS = [('linear', 1024)]
 
+    ADDITIONAL_EMBEDDING_LAYERS = []
+
+
+    # additional Fully-Connected layers's sizes applied before softmax.
+    # Here we should specify the activation function and the output dimension
+    # (e.g DEEP_OUTPUT_LAYERS = [('tanh', 600), ('relu',400), ('relu':200)])
     DEEP_OUTPUT_LAYERS = [('maxout', TEXT_EMBEDDING_HIDDEN_SIZE/2)]
 
-                                # additional Fully-Connected layers's sizes applied before softmax.
-                                # Here we should specify the activation function and the output dimension
-                                # (e.g DEEP_OUTPUT_LAYERS = [('tanh', 600), ('relu',400), ('relu':200)])
+
 
 
     # Regularizers / Normalizers
@@ -153,8 +149,9 @@ def load_parameters():
                                                        # be greater than 0 and EVAL_ON_SETS will be used)
 
     # Extra parameters for special trainings
-    TRAIN_ON_TRAINVAL = False  # train the model on both training and validation sets combined
-    FORCE_RELOAD_VOCABULARY = False  # force building a new vocabulary from the training samples applicable if RELOAD > 1
+    TRAIN_ON_TRAINVAL = False                          # train the model on both training and validation sets combined
+    FORCE_RELOAD_VOCABULARY = False                    # force building a new vocabulary from the training samples
+                                                       # applicable if RELOAD > 1
 
     # ============================================
     parameters = locals().copy()
