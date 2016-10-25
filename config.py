@@ -1,7 +1,7 @@
 
 def load_parameters():
     '''
-        Loads the defined parameters
+    Loads the defined parameters
     '''
 
     # Input data params
@@ -95,9 +95,13 @@ def load_parameters():
 
     # LSTM layers dimensions (Only used if needed)
     LSTM_ENCODER_HIDDEN_SIZE = 289   # For models with LSTM encoder
-    INIT_LAYERS = ['tanh']      # FC layers for initializing the first LSTM state
-                                # Here we should only specify the activation function of each layer (as they have a potentially fixed size)
-                                # (e.g INIT_LAYERS = ['tanh', 'relu'])
+
+    # FC layers for initializing the first LSTM state
+    # Here we should only specify the activation function of each layer (as they have a potentially fixed size)
+    # (e.g INIT_LAYERS = ['tanh', 'relu'])
+    INIT_LAYERS = ['tanh']
+
+
 
     # CNN layers parameters (Only used if needed)
     NUM_FILTERS = 100
@@ -112,13 +116,10 @@ def load_parameters():
 
     ADDITIONAL_EMBEDDING_LAYERS = []
 
-
     # additional Fully-Connected layers's sizes applied before softmax.
     # Here we should specify the activation function and the output dimension
     # (e.g DEEP_OUTPUT_LAYERS = [('tanh', 600), ('relu',400), ('relu':200)])
     DEEP_OUTPUT_LAYERS = [('maxout', TEXT_EMBEDDING_HIDDEN_SIZE/2)]
-
-
 
 
     # Regularizers / Normalizers
@@ -128,7 +129,7 @@ def load_parameters():
     USE_L2 = False                      # L2 normalization on the features
 
     # Results plot and models storing parameters
-    EXTRA_NAME = '' # This will be appended to the end of the model name
+    EXTRA_NAME = ''  # This will be appended to the end of the model name
     MODEL_NAME = DATASET_NAME + '_' + MODEL_TYPE + '_txtemb_' + str(TEXT_EMBEDDING_HIDDEN_SIZE) + \
                  '_addemb_' + '_'.join([layer[0] for layer in ADDITIONAL_EMBEDDING_LAYERS]) + \
                  '_' + str(LSTM_ENCODER_HIDDEN_SIZE) + \
@@ -137,7 +138,7 @@ def load_parameters():
 
     MODEL_NAME += EXTRA_NAME
 
-    STORE_PATH = 'trained_models/' + MODEL_NAME  + '/' # Models and evaluation results will be stored here
+    STORE_PATH = 'trained_models/' + MODEL_NAME + '/'  # Models and evaluation results will be stored here
     DATASET_STORE_PATH = 'datasets/'                   # Dataset instance will be stored here
 
     SAMPLING_SAVE_MODE = 'numpy'                       # 'list', 'numpy', 'vqa'
