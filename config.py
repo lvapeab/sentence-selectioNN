@@ -9,7 +9,8 @@ def load_parameters():
     FILL = 'end'                                  # whether we fill the 'end' or the 'start' of the sentence with 0s
     SRC_LAN = 'sh'                                # Language of the outputs
 
-    DATA_ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
+    #DATA_ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
+    DATA_ROOT_PATH = '/home/lvapeab/smt/tasks/%s/' % DATASET_NAME
 
     # SRC_LAN or TRG_LAN will be added to the file names
     TEXT_FILES = {'train': 'DATA/training.',
@@ -89,7 +90,7 @@ def load_parameters():
     # Model parameters
     MODEL_TYPE = 'BLSTM_Classifier'
 
-    GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
+    GLOVE_VECTORS = '/home/lvapeab/smt/tasks/image_desc/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
     GLOVE_VECTORS_TRAINABLE = True    # Finetune or not the word embedding vectors.
     TEXT_EMBEDDING_HIDDEN_SIZE = 300  # When using pretrained word embeddings, this parameter must match with the word embeddings size
 
