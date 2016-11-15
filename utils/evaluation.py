@@ -175,7 +175,7 @@ def multilabel_metrics(pred_list, verbose, extra_vars, split):
 
     # Compute Coverage Error
     accuracy = sklearn_metrics.accuracy_score(y_gt, y_pred)
-    precision, recall, f1, _ = sklearn_metrics.precision_recall_fscore_support(y_gt, y_pred, average='micro')
+    precision, recall, f1, _ = sklearn_metrics.precision_recall_fscore_support(y_gt, y_pred, average='macro')
 
     if verbose > 0:
         logging.info('Accuracy: %f \t Precision: %f \t Recall: %f \t F1: %f' %
