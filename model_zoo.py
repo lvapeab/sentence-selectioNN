@@ -6,11 +6,11 @@ from keras.layers.recurrent import LSTM, GRU, LSTMCond, AttLSTM, AttLSTMCond, At
 from keras.layers.advanced_activations import PReLU
 from keras.layers.normalization import BatchNormalization, L2_norm
 from keras.layers.convolutional import ZeroPadding1D
-from keras.layers.core import Dropout, Dense, Flatten, Activation, Lambda, MaxoutDense, MaskedMean
+from keras.layers.core import Dropout, Dense, Flatten, Activation, Lambda, MaxoutDense, MaskedMean, Reshape
 from keras.models import model_from_json, Sequential, Graph, Model
 from keras.preprocessing.sequence import pad_sequences
 from keras.regularizers import l2, activity_l2
-from keras.layers.convolutional import AveragePooling1D, Convolution1D, MaxPooling1D
+from keras.layers.convolutional import AveragePooling1D, Convolution1D, MaxPooling1D, Convolution2D, MaxPooling2D
 from keras.optimizers import Adam, RMSprop, Nadam, Adadelta
 from keras import backend as K
 from keras.regularizers import l2
@@ -146,133 +146,6 @@ class Text_Classification_Model(CNN_Model):
             if not os.path.isdir(self.model_path):
                 os.makedirs(self.model_path)
 
-
-    def sample(a, temperature=1.0):
-        # helper function to sample an index from a probability array
-        a = np.log(a) / temperature
-        a = np.exp(a) / np.sum(np.exp(a))
-        return np.argmax(np.random.multinomial(1, a, 1))
-
-
-    def sampling(self, scores, sampling_type='max_likelihood', temperature=1.0):
-        """
-        Sampling words (each sample is drawn from a categorical distribution).
-        Or picks up words that maximize the likelihood.
-        In:
-            scores - array of size #samples x #classes;
-                every entry determines a score for sample i having class j
-            temperature - temperature for the predictions;
-                the higher the flatter probabilities and hence more random answers
-
-        Out:
-            set of indices chosen as output, a vector of size #samples
-        """
-        if isinstance(scores, dict):
-            scores = scores['output']
-
-        if sampling_type == 'multinomial':
-            logscores = np.log(scores) / temperature
-            # numerically stable version
-            normalized_logscores= logscores - np.max(logscores, axis=-1)[:, np.newaxis]
-            margin_logscores = np.sum(np.exp(normalized_logscores),axis=-1)
-            probs = np.exp(normalized_logscores) / margin_logscores[:, np.newaxis]
-
-            #probs = probs.astype('float32')
-            draws = np.zeros_like(probs)
-            num_samples = probs.shape[0]
-            # we use 1 trial to mimic categorical distributions using multinomial
-            for k in xrange(num_samples):
-                #probs[k,:] = np.random.multinomial(1,probs[k,:],1)
-                #return np.argmax(probs, axis=-1)
-                draws[k, :] = np.random.multinomial(1,probs[k,:],1)
-            return np.argmax(draws, axis=-1)
-        elif sampling_type == 'max_likelihood':
-            return np.argmax(scores, axis=-1)
-        else:
-            raise NotImplementedError()
-
-    def decode_predictions(self, preds, temperature, index2word, sampling_type, verbose=0):
-        """
-        Decodes predictions
-
-        In:
-            preds - predictions codified as the output of a softmax activation function
-            temperature - temperature for sampling
-            index2word - mapping from word indices into word characters
-            verbose - verbosity level, by default 0
-
-        Out:
-            Answer predictions (list of answers)
-        """
-        if verbose > 0:
-            logging.info('Decoding prediction ...')
-        flattened_preds = preds.reshape(-1, preds.shape[-1])
-        flattened_answer_pred = map(lambda x: index2word[x],self.sampling(scores=flattened_preds,
-                                                                          sampling_type=sampling_type,
-                                                                          temperature=temperature))
-        answer_pred_matrix = np.asarray(flattened_answer_pred).reshape(preds.shape[:2])
-        answer_pred = []
-        EOS = '<eos>'
-        BOS = '<bos>'
-        PAD = '<pad>'
-
-        for a_no in answer_pred_matrix:
-            init_token_pos = 0
-            end_token_pos = [j for j, x in enumerate(a_no) if x==EOS or x == PAD]
-            end_token_pos = None if len(end_token_pos) == 0 else end_token_pos[0]
-            tmp = ' '.join(a_no[init_token_pos:end_token_pos])
-            answer_pred.append(tmp)
-        return answer_pred
-
-
-    def decode_predictions_beam_search(self, preds, index2word, verbose=0):
-        """
-        Decodes predictions
-
-        In:
-            preds - predictions codified as word indices
-            temperature - temperature for sampling
-            index2word - mapping from word indices into word characters
-            verbose - verbosity level, by default 0
-
-        Out:
-            Answer predictions (list of answers)
-        """
-        if verbose > 0:
-            logging.info('Decoding beam search prediction ...')
-        flattened_answer_pred = [map(lambda x: index2word[x], pred) for pred in preds]
-        answer_pred = []
-        for a_no in flattened_answer_pred:
-            tmp = ' '.join(a_no[:-1])
-            answer_pred.append(tmp)
-        return answer_pred
-
-    def decode_predictions_one_hot(self, preds, index2word, verbose=0):
-        """
-        Decodes predictionss
-
-        In:
-            preds - predictions codified as one hot vectors
-            index2word - mapping from word indices into word characters
-            verbose - verbosity level, by default 0
-
-        Out:
-            Answer predictions (list of answers)
-        """
-        if verbose > 0:
-            logging.info('Decoding one hot prediction ...')
-        preds = map(lambda x: np.nonzero(x)[1], preds)
-        PAD = '<pad>'
-        flattened_answer_pred = [map(lambda x: index2word[x], pred) for pred in preds]
-        answer_pred_matrix = np.asarray(flattened_answer_pred)
-        answer_pred = []
-
-        for a_no in answer_pred_matrix:
-            end_token_pos = [j for j, x in enumerate(a_no) if x == PAD]
-            end_token_pos = None if len(end_token_pos) == 0 else end_token_pos[0]
-            tmp = ' '.join(a_no[:end_token_pos])
-            answer_pred.append(tmp)
-        return answer_pred
     # ------------------------------------------------------- #
     #       VISUALIZATION
     #           Methods for visualization
@@ -320,38 +193,24 @@ class Text_Classification_Model(CNN_Model):
 
         # Source text
         src_text = Input(name=self.ids_inputs[0], batch_shape=tuple([None, params['MAX_INPUT_TEXT_LEN']]), dtype='int32')
-        sentence_embedding = Embedding(params['INPUT_VOCABULARY_SIZE'], params['TEXT_EMBEDDING_HIDDEN_SIZE'],
-                                       name='source_word_embedding', weights=[embedding_weights],
-                                       trainable=params['GLOVE_VECTORS_TRAINABLE'],
-                                       W_regularizer=l2(params['WEIGHT_DECAY']),
-                                       mask_zero=False)(src_text)
-
-        for activation, dimension in params['ADDITIONAL_EMBEDDING_LAYERS']:
-            sentence_embedding = TimeDistributed(Dense(dimension, name='%s_1'%activation, activation=activation,
-                                               W_regularizer=l2(params['WEIGHT_DECAY'])))(sentence_embedding)
-            if params['USE_BATCH_NORMALIZATION']:
-                sentence_embedding = BatchNormalization(name='batch_normalization_image_embedding',
-                                                W_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding)
-            if params['USE_PRELU']:
-                sentence_embedding = PReLU(W_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding)
-            if params['USE_DROPOUT']:
-                sentence_embedding = Dropout(0.5)(sentence_embedding)
-            if params['USE_L2']:
-                sentence_embedding = Lambda(L2_norm)(sentence_embedding)
-
+        sentence_embedding_glove = Embedding(params['INPUT_VOCABULARY_SIZE'], params['TEXT_EMBEDDING_HIDDEN_SIZE'],
+                                           name='source_word_embedding_glove', weights=[embedding_weights],
+                                           trainable=params['GLOVE_VECTORS_TRAINABLE'],
+                                           W_regularizer=l2(params['WEIGHT_DECAY']),
+                                           mask_zero=False)(src_text)
         convolutions = []
         for filter_len in params['FILTER_SIZES']:
             conv = Convolution1D(nb_filter=params['NUM_FILTERS'],
                                  filter_length=filter_len,
+                                 activation=params['CNN_ACTIVATION'],
                                  W_regularizer=l2(params['WEIGHT_DECAY']),
-                                 b_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding)
-            pool = MaxPooling1D(pool_length=params['POOL_LENGTH'])(conv)
+                                 b_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding_glove)
+            pool = MaxPooling1D()(conv)
             convolutions.append(Flatten()(pool))
         if len(convolutions) > 1:
             out_layer = merge(convolutions, mode='concat')
         else:
             out_layer = convolutions[0]
-
         # Optional deep ouput
         for i, (activation, dimension) in enumerate(params['DEEP_OUTPUT_LAYERS']):
             if activation.lower() == 'maxout':

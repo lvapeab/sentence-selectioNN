@@ -9,8 +9,7 @@ def load_parameters():
     FILL = 'end'                                  # whether we fill the 'end' or the 'start' of the sentence with 0s
     SRC_LAN = 'sh'                                # Language of the outputs
 
-    #DATA_ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
-    DATA_ROOT_PATH = '/home/lvapeab/smt/tasks/%s/' % DATASET_NAME
+    DATA_ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
 
     # SRC_LAN or TRG_LAN will be added to the file names
     TEXT_FILES = {'train': 'DATA/training.',
@@ -42,7 +41,7 @@ def load_parameters():
 
     # Early stop parameters
     EARLY_STOP = True                  # Turns on/off the early stop protocol
-    PATIENCE = 10                      # We'll stop if the val STOP_METRIC does not improve after this number of evaluations
+    PATIENCE = 15                      # We'll stop if the val STOP_METRIC does not improve after this number of evaluations
     STOP_METRIC = 'accuracy'           # Metric for the stop
 
     # Word representation params
@@ -71,7 +70,7 @@ def load_parameters():
 
     # Training parameters
     MAX_EPOCH = 500         # Stop when computed this number of epochs
-    BATCH_SIZE = 160        #  Training batch size
+    BATCH_SIZE = 32         #  Training batch size
 
     HOMOGENEOUS_BATCHES = False  # Use batches with homogeneous output lengths for every minibatch (Dangerous!)
     PARALLEL_LOADERS = 8         # Parallel data batch loaders
@@ -88,9 +87,9 @@ def load_parameters():
     N_CLASSES = 2
 
     # Model parameters
-    MODEL_TYPE = 'BLSTM_Classifier'
+    MODEL_TYPE = 'CNN_Classifier'
 
-    GLOVE_VECTORS = '/home/lvapeab/smt/tasks/image_desc/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
+    GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
     GLOVE_VECTORS_TRAINABLE = True    # Finetune or not the word embedding vectors.
     TEXT_EMBEDDING_HIDDEN_SIZE = 300  # When using pretrained word embeddings, this parameter must match with the word embeddings size
 
@@ -105,7 +104,7 @@ def load_parameters():
 
 
     # CNN layers parameters (Only used if needed)
-    NUM_FILTERS = 100
+    NUM_FILTERS = 200
     FILTER_SIZES = [3,4,5]
     POOL_LENGTH = 2
     CNN_ACTIVATION = 'relu'
@@ -120,7 +119,7 @@ def load_parameters():
     # additional Fully-Connected layers's sizes applied before softmax.
     # Here we should specify the activation function and the output dimension
     # (e.g DEEP_OUTPUT_LAYERS = [('tanh', 600), ('relu',400), ('relu':200)])
-    DEEP_OUTPUT_LAYERS = [('maxout', TEXT_EMBEDDING_HIDDEN_SIZE/2)]
+    DEEP_OUTPUT_LAYERS = [('linear', 200), ('linear', 100)]
 
 
     # Regularizers / Normalizers
