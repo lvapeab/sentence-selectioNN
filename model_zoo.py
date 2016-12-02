@@ -10,7 +10,7 @@ from keras.models import model_from_json, Sequential, Graph, Model
 from keras.layers.convolutional import AveragePooling1D, Convolution1D, MaxPooling1D, Convolution2D, MaxPooling2D
 from keras.optimizers import Adam, RMSprop, Nadam, Adadelta
 from keras.regularizers import l2
-
+from utils.regularize import Regularize
 from keras_wrapper.cnn_model import CNN_Model
 
 import numpy as np
@@ -202,6 +202,7 @@ class Text_Classification_Model(CNN_Model):
                                  W_regularizer=l2(params['WEIGHT_DECAY']),
                                  b_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding_glove)
             pool = MaxPooling1D()(conv)
+            #pool = Regularize(pool, params, name='pool_' + str(filter_len))
             convolutions.append(Flatten()(pool))
         if len(convolutions) > 1:
             out_layer = merge(convolutions, mode='concat')
@@ -219,13 +220,7 @@ class Text_Classification_Model(CNN_Model):
                                   W_regularizer=l2(params['WEIGHT_DECAY']),
                                   name=activation+'_%d'%i)(out_layer)
 
-            if params['USE_BATCH_NORMALIZATION']:
-                out_layer = BatchNormalization(name='batch_normalization_image_embedding',
-                                              W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
-            if params['USE_PRELU']:
-                out_layer = PReLU(W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
-            if params['USE_DROPOUT']:
-                out_layer = Dropout(0.5)(out_layer)
+            out_layer = Regularize(out_layer, params, name='out_layer_' + str(i))
 
         # Softmax
         output = Dense(params['N_CLASSES'],

@@ -7,7 +7,7 @@ def load_parameters():
     # Input data params
     DATASET_NAME = 'cnn_polarity'
     FILL = 'end'                                  # whether we fill the 'end' or the 'start' of the sentence with 0s
-    SRC_LAN = 'sh'                                # Language of the outputs
+    SRC_LAN = 'sn'                                # Language of the outputs
 
     DATA_ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
 
@@ -24,10 +24,9 @@ def load_parameters():
     OUTPUTS_IDS_DATASET = ['class']           # Corresponding outputs of the dataset
     INPUTS_IDS_MODEL = ['input_text']         # Corresponding inputs of the built model
     OUTPUTS_IDS_MODEL = ['class']             # Corresponding outputs of the built model
-
     # Evaluation params
     METRICS = ['multilabel_metrics']              # Metric used for evaluating model after each epoch (leave empty if only prediction is required)
-    EVAL_ON_SETS = ['val']                        # Possible values: 'train', 'val' and 'test' (external evaluator)
+    EVAL_ON_SETS = ['train']                        # Possible values: 'train', 'val' and 'test' (external evaluator)
     EVAL_ON_SETS_KERAS = []                       # Possible values: 'train', 'val' and 'test' (Keras' evaluator)
     START_EVAL_ON_EPOCH = 1                       # First epoch where the model will be evaluated
     EVAL_EACH_EPOCHS = True                       # Select whether evaluate between N epochs or N updates
@@ -46,9 +45,8 @@ def load_parameters():
     STOP_METRIC = 'accuracy'           # Metric for the stop
 
     # Word representation params
-    TOKENIZATION_METHOD = 'tokenize_none'         # Select which tokenization we'll apply:
-                                                  # tokenize_basic, tokenize_aggressive, tokenize_soft,
-                                                  # tokenize_icann or tokenize_questions
+    TOKENIZATION_METHOD = 'tokenize_CNN_sentence' # Select which tokenization we'll apply:
+
     # Input image parameters
     DATA_AUGMENTATION = False                     # Apply data augmentation on input data (noise on features)
 
@@ -66,7 +64,7 @@ def load_parameters():
     OPTIMIZER = 'Adam'      # Optimizer
     LR = 0.0001              # (recommended values - Adam 0.001 - Adadelta 1.0
     WEIGHT_DECAY = 1e-4     # L2 regularization
-    CLIP_C = 10.            # During training, clip gradients to this norm
+    CLIP_C = 9.            # During training, clip gradients to this norm
     SAMPLE_WEIGHTS = False  # Select whether we use a weights matrix (mask) for the data outputs
 
     # Training parameters
@@ -90,7 +88,7 @@ def load_parameters():
     # Model parameters
     MODEL_TYPE = 'CNN_Classifier'
 
-    GLOVE_VECTORS = None #'/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
+    GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
     GLOVE_VECTORS_TRAINABLE = True    # Finetune or not the word embedding vectors.
     TEXT_EMBEDDING_HIDDEN_SIZE = 300  # When using pretrained word embeddings, this parameter must match with the word embeddings size
 
@@ -105,7 +103,7 @@ def load_parameters():
 
 
     # CNN layers parameters (Only used if needed)
-    NUM_FILTERS = 200
+    NUM_FILTERS = 100
     FILTER_SIZES = [3,4,5]
     POOL_LENGTH = 2
     CNN_ACTIVATION = 'relu'
@@ -120,7 +118,7 @@ def load_parameters():
     # additional Fully-Connected layers's sizes applied before softmax.
     # Here we should specify the activation function and the output dimension
     # (e.g DEEP_OUTPUT_LAYERS = [('tanh', 600), ('relu',400), ('relu':200)])
-    DEEP_OUTPUT_LAYERS = [('linear', 200), ('linear', 100)]
+    DEEP_OUTPUT_LAYERS = [('linear', 100)]
 
 
     # Regularizers / Normalizers
