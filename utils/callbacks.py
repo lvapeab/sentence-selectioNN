@@ -129,8 +129,12 @@ class PrintPerformanceMetricOnEpochEnd(KerasCallback):
                                                       verbose=self.verbose)
             # Store predictions
             if self.write_samples:
+                if self.write_type == 'numpy':
+                    extension = '.np'
+                else:
+                    extension = '.pred'
                 # Store result
-                filepath = self.save_path +'/'+ s +'_epoch_'+ str(epoch) +'.pred' # results file
+                filepath = self.save_path +'/'+ s +'_update_'+ str(epoch) + extension # results file
                 if self.write_type == 'list':
                     list2file(filepath, predictions)
                 elif self.write_type == 'vqa':
@@ -300,8 +304,12 @@ class PrintPerformanceMetricEachNUpdates(KerasCallback):
 
             # Store predictions
             if self.write_samples:
+                if self.write_type == 'numpy':
+                    extension = '.np'
+                else:
+                    extension = '.pred'
                 # Store result
-                filepath = self.save_path +'/'+ s +'_update_'+ str(self.cum_update) +'.pred' # results file
+                filepath = self.save_path +'/'+ s +'_update_'+ str(self.cum_update) + extension # results file
                 if self.write_type == 'list':
                     list2file(filepath, predictions)
                 elif self.write_type == 'vqa':
