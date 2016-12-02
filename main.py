@@ -197,39 +197,6 @@ def buildCallbacks(params, model, dataset):
                                                            verbose=params['VERBOSE'])
         callbacks.append(callback_metric)
 
-        if params['SAMPLE_ON_SETS']:
-            raise Exception, "TODO: \"Sampling\". We could sample 3 sentences and classify them"
-            # Evaluate sampling
-            extra_vars = {'language': params['TRG_LAN'], 'n_parallel_loaders': params['PARALLEL_LOADERS']}
-            vocab = dataset.vocabulary[params['OUTPUTS_IDS_DATASET'][0]]['idx2words']
-            for s in params['EVAL_ON_SETS']:
-                extra_vars[s] = dict()
-                extra_vars[s]['references'] = dataset.extra_variables[s][params['OUTPUTS_IDS_DATASET'][0]]
-                extra_vars[s]['tokenize_f'] = eval('dataset.' + params['TOKENIZATION_METHOD'])
-            if params['BEAM_SIZE']:
-                extra_vars['beam_size'] = params['BEAM_SIZE']
-                extra_vars['maxlen'] = params['MAX_OUTPUT_TEXT_LEN']
-                extra_vars['model_inputs'] = params['INPUTS_IDS_MODEL']
-                extra_vars['model_outputs'] = params['OUTPUTS_IDS_MODEL']
-                extra_vars['dataset_inputs'] = params['INPUTS_IDS_DATASET']
-                extra_vars['dataset_outputs'] = params['OUTPUTS_IDS_DATASET']
-                extra_vars['normalize'] =  params['NORMALIZE_SAMPLING']
-                extra_vars['alpha_factor'] =  params['ALPHA_FACTOR']
-
-            callback_sampling = utils.callbacks.SampleEachNUpdates(model, dataset,
-                                                                   gt_id=params['OUTPUTS_IDS_DATASET'][0],
-                                                                   set_name=params['SAMPLE_ON_SETS'],
-                                                                   n_samples=params['N_SAMPLES'],
-                                                                   each_n_updates=params['SAMPLE_EACH_UPDATES'],
-                                                                   extra_vars=extra_vars,
-                                                                   reload_epoch=params['RELOAD'],
-                                                                   is_text=True, index2word_y=vocab,  # text info
-                                                                   sampling_type=params['SAMPLING'],  # text info
-                                                                   beam_search=params['BEAM_SEARCH'],
-                                                                   start_sampling_on_epoch=params['START_SAMPLING_ON_EPOCH'],
-                                                                   verbose=params['VERBOSE'])
-            callbacks.append(callback_sampling)
-
     return callbacks
 
 

@@ -11,12 +11,10 @@ def load_parameters():
 
     DATA_ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
 
-    # SRC_LAN or TRG_LAN will be added to the file names
-    TEXT_FILES = {'train': 'DATA/training.',
-                  'val': 'DATA/val.'}
 
-    CLASS_FILES = {'train': 'DATA/training.class',
-                   'val': 'DATA/val.class'}
+    # SRC_LAN or TRG_LAN will be added to the file names
+    TEXT_FILES = {'train': 'DATA/train.class'}
+    CLASS_FILES = {'train': 'DATA/train.class'}
 
     # Dataset parameters
     INPUTS_IDS_DATASET = ['input_text']       # Corresponding inputs of the dataset
@@ -63,7 +61,7 @@ def load_parameters():
     CLASS_MODE = 'categorical'
 
     OPTIMIZER = 'Adam'      # Optimizer
-    LR = 0.001              # (recommended values - Adam 0.001 - Adadelta 1.0
+    LR = 0.0001              # (recommended values - Adam 0.001 - Adadelta 1.0
     WEIGHT_DECAY = 1e-4     # L2 regularization
     CLIP_C = 10.            # During training, clip gradients to this norm
     SAMPLE_WEIGHTS = False  # Select whether we use a weights matrix (mask) for the data outputs

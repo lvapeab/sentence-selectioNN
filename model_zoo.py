@@ -5,14 +5,10 @@ from keras.layers.embeddings import Embedding
 from keras.layers.recurrent import LSTM, GRU, LSTMCond, AttLSTM, AttLSTMCond, AttGRUCond
 from keras.layers.advanced_activations import PReLU
 from keras.layers.normalization import BatchNormalization, L2_norm
-from keras.layers.convolutional import ZeroPadding1D
 from keras.layers.core import Dropout, Dense, Flatten, Activation, Lambda, MaxoutDense, MaskedMean, Reshape
 from keras.models import model_from_json, Sequential, Graph, Model
-from keras.preprocessing.sequence import pad_sequences
-from keras.regularizers import l2, activity_l2
 from keras.layers.convolutional import AveragePooling1D, Convolution1D, MaxPooling1D, Convolution2D, MaxPooling2D
 from keras.optimizers import Adam, RMSprop, Nadam, Adadelta
-from keras import backend as K
 from keras.regularizers import l2
 
 from keras_wrapper.cnn_model import CNN_Model
