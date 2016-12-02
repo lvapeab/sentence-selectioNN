@@ -66,6 +66,7 @@ def train_model(params):
     logger.debug('Starting training!')
     training_params = {'n_epochs': params['MAX_EPOCH'], 'batch_size': params['BATCH_SIZE'],
                        'homogeneous_batches':params['HOMOGENEOUS_BATCHES'],
+                       'shuffle': False if 'train' in params['EVAL_ON_SETS'] else True,
                        'epochs_for_save': params['EPOCHS_FOR_SAVE'], 'verbose': params['VERBOSE'],
                        'eval_on_sets': params['EVAL_ON_SETS_KERAS'], 'n_parallel_loaders': params['PARALLEL_LOADERS'],
                        'extra_callbacks': callbacks, 'reload_epoch': params['RELOAD'],
