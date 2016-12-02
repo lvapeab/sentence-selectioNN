@@ -58,18 +58,29 @@ else
     rm  /tmp/neg2
 fi
 
-# Separate class and sentences files (reshuffling)
-shuf /tmp/train | awk 'BEGIN{FS="\t"}{print $1}' >  $destdir/training.sn
-shuf /tmp/train | awk 'BEGIN{FS="\t"}{print $2}' >  $destdir/training.class
+# Shuffle corpora
+shuf /tmp/train > /tmp/train_shuf
 
 if [ $# -ge 3 ]; then
-    shuf /tmp/dev | awk 'BEGIN{FS="\t"}{print $1}' >  $destdir/val.sn
-    shuf /tmp/dev | awk 'BEGIN{FS="\t"}{print $2}' >  $destdir/val.class
+    shuf /tmp/dev > /tmp/dev_shuf
 fi
 
 if [ $# -ge 4 ]; then
-    shuf /tmp/test | awk 'BEGIN{FS="\t"}{print $1}' >  $destdir/test.sn
-    shuf /tmp/test | awk 'BEGIN{FS="\t"}{print $2}' >  $destdir/test.class
+    shuf /tmp/test > /tmp/test_shuf
+fi
+
+# Separate class and sentences files
+cat /tmp/train_shuf | awk 'BEGIN{FS="\t"}{print $1}' >  $destdir/training.sn
+cat /tmp/train_shuf | awk 'BEGIN{FS="\t"}{print $2}' >  $destdir/training.class
+
+if [ $# -ge 3 ]; then
+    cat /tmp/dev_shuf | awk 'BEGIN{FS="\t"}{print $1}' >  $destdir/val.sn
+    cat /tmp/dev_shuf | awk 'BEGIN{FS="\t"}{print $2}' >  $destdir/val.class
+fi
+
+if [ $# -ge 4 ]; then
+    cat /tmp/test_shuf | awk 'BEGIN{FS="\t"}{print $1}' >  $destdir/test.sn
+    cat /tmp/test_shuf | awk 'BEGIN{FS="\t"}{print $2}' >  $destdir/test.class
 fi
 
 # Remove temporal data
