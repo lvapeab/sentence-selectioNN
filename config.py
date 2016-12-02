@@ -13,8 +13,11 @@ def load_parameters():
 
 
     # SRC_LAN or TRG_LAN will be added to the file names
-    TEXT_FILES = {'train': 'DATA/train.class'}
-    CLASS_FILES = {'train': 'DATA/train.class'}
+    TEXT_FILES = {'train': 'DATA/training.',
+                  'val': 'DATA/val.'}
+
+    CLASS_FILES = {'train': 'DATA/training.class',
+                   'val': 'DATA/val.class'}
 
     # Dataset parameters
     INPUTS_IDS_DATASET = ['input_text']       # Corresponding inputs of the dataset
@@ -68,7 +71,7 @@ def load_parameters():
 
     # Training parameters
     MAX_EPOCH = 500         # Stop when computed this number of epochs
-    BATCH_SIZE = 32         #  Training batch size
+    BATCH_SIZE = 128        #  Training batch size
 
     HOMOGENEOUS_BATCHES = False  # Use batches with homogeneous output lengths for every minibatch (Dangerous!)
     PARALLEL_LOADERS = 8         # Parallel data batch loaders
@@ -87,7 +90,7 @@ def load_parameters():
     # Model parameters
     MODEL_TYPE = 'CNN_Classifier'
 
-    GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
+    GLOVE_VECTORS = None #'/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
     GLOVE_VECTORS_TRAINABLE = True    # Finetune or not the word embedding vectors.
     TEXT_EMBEDDING_HIDDEN_SIZE = 300  # When using pretrained word embeddings, this parameter must match with the word embeddings size
 
