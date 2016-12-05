@@ -26,7 +26,7 @@ def load_parameters():
     OUTPUTS_IDS_MODEL = ['class']             # Corresponding outputs of the built model
     # Evaluation params
     METRICS = ['multilabel_metrics']              # Metric used for evaluating model after each epoch (leave empty if only prediction is required)
-    EVAL_ON_SETS = ['train']                        # Possible values: 'train', 'val' and 'test' (external evaluator)
+    EVAL_ON_SETS = ['train', 'val']                        # Possible values: 'train', 'val' and 'test' (external evaluator)
     EVAL_ON_SETS_KERAS = []                       # Possible values: 'train', 'val' and 'test' (Keras' evaluator)
     START_EVAL_ON_EPOCH = 1                       # First epoch where the model will be evaluated
     EVAL_EACH_EPOCHS = True                       # Select whether evaluate between N epochs or N updates
@@ -118,14 +118,22 @@ def load_parameters():
     # additional Fully-Connected layers's sizes applied before softmax.
     # Here we should specify the activation function and the output dimension
     # (e.g DEEP_OUTPUT_LAYERS = [('tanh', 600), ('relu',400), ('relu':200)])
-    DEEP_OUTPUT_LAYERS = [('linear', 100)]
+    DEEP_OUTPUT_LAYERS = [('linear', 200), ('linear', 100)]
 
 
-    # Regularizers / Normalizers
-    USE_DROPOUT = True                  # Use dropout (0.5)
-    USE_BATCH_NORMALIZATION = False     # If True it is recommended to deactivate Dropout
-    USE_PRELU = False                   # use PReLU activations
-    USE_L2 = False                      # L2 normalization on the features
+
+    # Regularizers
+    USE_DROPOUT = True                            # Use dropout
+    DROPOUT_P = 0.5                               # Percentage of units to drop
+
+    USE_NOISE = True                              # Use gaussian noise during training
+    NOISE_AMOUNT = 0.01                           # Amount of noise
+
+    USE_BATCH_NORMALIZATION = True                # If True it is recommended to deactivate Dropout
+    BATCH_NORMALIZATION_MODE = 1                  # See documentation in Keras' BN
+
+    USE_PRELU = False                             # use PReLU activations as regularizer
+    USE_L2 = False                                # L2 normalization on the features
 
     # Results plot and models storing parameters
     EXTRA_NAME = ''  # This will be appended to the end of the model name
