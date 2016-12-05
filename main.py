@@ -155,30 +155,34 @@ def apply_Clas_model(params):
 
 def semisupervised_selection(params):
     check_params(params)
+    initial_pos_filename = params['POSITIVE_FILENAME']
+    initial_neg_filename = params['NEGATIVE_FILENAME']
+    initial_pool_filename = params['POOL_FILENAME']
 
-    pos_filename_src = params['DATA_ROOT_PATH'] + '/' + params['POSITIVE_FILENAME'] + '.' + params['SRC_LAN']
+    pos_filename_src = params['DATA_ROOT_PATH'] + '/' + initial_pos_filename+ '.' + params['SRC_LAN']
     in_domain_file = open(pos_filename_src, 'r')
     in_domain = in_domain_file.readlines()
     in_domain_file.close()
-    pos_filename_trg = params['DATA_ROOT_PATH'] + '/' + params['POSITIVE_FILENAME'] + '.' + params['TRG_LAN']
-    neg_filename_src = params['DATA_ROOT_PATH'] + '/' + params['NEGATIVE_FILENAME'] + '.' + params['SRC_LAN']
 
-    pool_filename_src = params['DATA_ROOT_PATH'] + '/' + params['POOL_FILENAME'] + '.' + params['SRC_LAN']
-    pool_filename_trg = params['DATA_ROOT_PATH'] + '/' + params['POOL_FILENAME'] + '.' + params['TRG_LAN']
+    neg_filename_src = params['DATA_ROOT_PATH'] + '/' + initial_neg_filename + '.' + params['SRC_LAN']
+    pos_filename_trg = params['DATA_ROOT_PATH'] + '/' + initial_pos_filename + '.' + params['TRG_LAN']
+
+    pool_filename_src = params['DATA_ROOT_PATH'] + '/' + initial_pool_filename + '.' + params['SRC_LAN']
+    pool_filename_trg = params['DATA_ROOT_PATH'] + '/' + initial_pool_filename + '.' + params['TRG_LAN']
 
 
     for i in range(params['N_ITER']):
         print "------------------ Starting iteration", i, "------------------"
-        new_pos_filename_src = params['DEST_ROOT_PATH'] + '/' + params['POSITIVE_FILENAME'] + '_' + str(i) + '.' + params['SRC_LAN']
-        new_pos_filename_trg = params['DEST_ROOT_PATH'] + '/' + params['POSITIVE_FILENAME'] + '_' + str(i) + '.' + params['TRG_LAN']
-        new_pos_filename_src_tmp = params['DEST_ROOT_PATH'] + '/' + params['POSITIVE_FILENAME'] + '_' + 'temp' + '.' + params['SRC_LAN']
+        new_pos_filename_src = params['DEST_ROOT_PATH'] + '/' + initial_pos_filename + '_' + str(i) + '.' + params['SRC_LAN']
+        new_pos_filename_trg = params['DEST_ROOT_PATH'] + '/' + initial_pos_filename + '_' + str(i) + '.' + params['TRG_LAN']
+        new_pos_filename_src_tmp = params['DEST_ROOT_PATH'] + '/' + initial_pos_filename + '_' + 'temp' + '.' + params['SRC_LAN']
 
         if params['DEBUG']:
-            new_neg_filename_src_tmp = params['DEST_ROOT_PATH'] + '/' + params['NEGATIVE_FILENAME'] + '_' + 'temp' + '.' + params['SRC_LAN']
-        new_neg_filename_src =  params['DEST_ROOT_PATH'] + '/' + params['NEGATIVE_FILENAME']+ '_' +  str(i) + '.' + params['SRC_LAN']
+            new_neg_filename_src_tmp = params['DEST_ROOT_PATH'] + '/' + initial_neg_filename + '_' + 'temp' + '.' + params['SRC_LAN']
+        new_neg_filename_src =  params['DEST_ROOT_PATH'] + '/' + initial_neg_filename + '_' +  str(i) + '.' + params['SRC_LAN']
 
-        new_pool_filename_src = params['DEST_ROOT_PATH'] + '/' + params['POOL_FILENAME'] + '_' + str(i) + '.' + params['SRC_LAN']
-        new_pool_filename_trg = params['DEST_ROOT_PATH'] + '/' + params['POOL_FILENAME'] + '_' + str(i) + '.' + params['SRC_LAN']
+        new_pool_filename_src = params['DEST_ROOT_PATH'] + '/' + initial_pool_filename + '_' + str(i) + '.' + params['SRC_LAN']
+        new_pool_filename_trg = params['DEST_ROOT_PATH'] + '/' + initial_pool_filename + '_' + str(i) + '.' + params['TRG_LAN']
 
         if i > 0:
             copyfile(pos_filename_src, new_pos_filename_src_tmp)
@@ -193,8 +197,8 @@ def semisupervised_selection(params):
         copyfile(pool_filename_src, new_pool_filename_src)
         copyfile(pool_filename_trg, new_pool_filename_trg)
 
-        params = update_config_params(params, new_pos_filename_src_tmp, new_pos_filename_src, new_pool_filename_trg)
-        params = process_files_binary_classification(params)
+        params = update_config_params(params, new_pos_filename_src_tmp, new_neg_filename_src, new_pool_filename_src)
+        params = process_files_binary_classification(params, i=i)
         ########### Load data
         dataset = build_dataset(params)
         params['INPUT_VOCABULARY_SIZE'] = dataset.vocabulary_len[params['INPUTS_IDS_DATASET'][0]]
@@ -244,7 +248,8 @@ def semisupervised_selection(params):
 
         # Apply model predictions
         params_prediction = {'batch_size': params['BATCH_SIZE'],
-                             'n_parallel_loaders': params['PARALLEL_LOADERS'], 'predict_on_sets': ['test']}
+                             'n_parallel_loaders': params['PARALLEL_LOADERS'],
+                             'predict_on_sets': ['test']}
 
         prediction_probs = text_class_model.predictNet(dataset, params_prediction)['test']
         positive_lines_src, positive_lines_trg, negative_lines, neutral_lines_src, neutral_lines_trg = \
@@ -361,7 +366,8 @@ def check_params(params):
     if 'Glove' in params['MODEL_TYPE'] and params['GLOVE_VECTORS'] is None:
         logger.warning("You set a model that uses pretrained word vectors but you didn't specify a vector file."
                        "We'll train WITHOUT pretrained embeddings!")
-
+    if params['MODE'] == 'semisupervised-selection' and not params['BINARY_SELECTION']:
+        raise AttributeError, 'When MODE = %s, BINARY_SELECTION must be set to True'
 if __name__ == "__main__":
 
     params = load_parameters()

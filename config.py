@@ -7,34 +7,35 @@ def load_parameters():
     # Input data params
     DATASET_NAME = 'cnn_polarity'
     FILL = 'end'                                  # whether we fill the 'end' or the 'start' of the sentence with 0s
-    SRC_LAN = 'sh'                                # Input language
-    TRG_LAN = 'sn'                                # Language of the outputs
-    MODE = 'training'                             # 'training' or 'sampling' (if 'sampling' then RELOAD must
+    SRC_LAN = 'en'                                # Input language
+    TRG_LAN = 'fr'                                # Language of the outputs
+    MODE = 'semisupervised-selection'             # 'training' or 'sampling' (if 'sampling' then RELOAD must
                                                   # be greater than 0 and EVAL_ON_SETS will be used)
-    BINARY_SELECTION = False
+    BINARY_SELECTION = True
     ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
     DATA_ROOT_PATH = ROOT_PATH + 'DATA'
     DEST_ROOT_PATH = ROOT_PATH + 'Selection'
-
+    DEBUG = True
+    INSTANCES_TO_ADD = 300
     if BINARY_SELECTION:
         POSITIVE_FILENAME = 'rt-polarity.pos'
         NEGATIVE_FILENAME = 'rt-polarity.neg'
         if 'semisupervised' in MODE:
             POOL_FILENAME = 'training'
-    # SRC_LAN or TRG_LAN will be added to the file names
-    TEXT_FILES = {'train': 'training',
-                  'val': 'val'}
+
+    TEXT_FILES = {'train': 'training.' + SRC_LAN,
+                  'val': 'val.' + SRC_LAN}
     CLASS_FILES = {'train': 'training.class',
                    'val': 'val.class'}
 
     # Dataset parameters
-    INPUTS_IDS_DATASET = ['input_text']       # Corresponding inputs of the dataset
-    OUTPUTS_IDS_DATASET = ['class']           # Corresponding outputs of the dataset
-    INPUTS_IDS_MODEL = ['input_text']         # Corresponding inputs of the built model
-    OUTPUTS_IDS_MODEL = ['class']             # Corresponding outputs of the built model
+    INPUTS_IDS_DATASET = ['input_text']           # Corresponding inputs of the dataset
+    OUTPUTS_IDS_DATASET = ['class']               # Corresponding outputs of the dataset
+    INPUTS_IDS_MODEL = ['input_text']             # Corresponding inputs of the built model
+    OUTPUTS_IDS_MODEL = ['class']                 # Corresponding outputs of the built model
     # Evaluation params
     METRICS = ['multilabel_metrics']              # Metric used for evaluating model after each epoch (leave empty if only prediction is required)
-    EVAL_ON_SETS = ['train', 'val']               # Possible values: 'train', 'val' and 'test' (external evaluator)
+    EVAL_ON_SETS = ['val']                        # Possible values: 'train', 'val' and 'test' (external evaluator)
     EVAL_ON_SETS_KERAS = []                       # Possible values: 'train', 'val' and 'test' (Keras' evaluator)
     START_EVAL_ON_EPOCH = 1                       # First epoch where the model will be evaluated
     EVAL_EACH_EPOCHS = True                       # Select whether evaluate between N epochs or N updates
@@ -76,7 +77,7 @@ def load_parameters():
     SAMPLE_WEIGHTS = False  # Select whether we use a weights matrix (mask) for the data outputs
 
     # Training parameters
-    MAX_EPOCH = 14               # Stop when computed this number of epochs
+    MAX_EPOCH =  4               # Stop when computed this number of epochs
     BATCH_SIZE = 128             # Training batch size
     N_ITER = 15                  # Iterations to perform of the semisupervised selection
 

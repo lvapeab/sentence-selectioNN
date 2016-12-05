@@ -42,20 +42,20 @@ def update_config_params(params,
     return params
 
 
-def process_files_binary_classification(params):
-    for (split, filename) in params['TEXT_FILES'].iteritems():
-        params['TEXT_FILES'][split] = params['DATA_ROOT_PATH'] + '/' + filename + '.' + params['SRC_LAN']
-    for (split, filename) in params['CLASS_FILES'].iteritems():
-        params['CLASS_FILES'][split] = params['DATA_ROOT_PATH'] + '/' + filename
+def process_files_binary_classification(params, i=0):
+    if i == 0:
+        for (split, filename) in params['TEXT_FILES'].iteritems():
+            params['TEXT_FILES'][split] = params['DATA_ROOT_PATH'] + '/' + filename
+        for (split, filename) in params['CLASS_FILES'].iteritems():
+            params['CLASS_FILES'][split] = params['DATA_ROOT_PATH'] + '/' + filename
     if params['BINARY_SELECTION']:
-        pos_filename = params['POSITIVE_FILENAME'] + '.' + params['SRC_LAN']
-        neg_filename = params['NEGATIVE_FILENAME'] + '.' + params['SRC_LAN']
+        pos_filename = params['POSITIVE_FILENAME']
+        neg_filename = params['NEGATIVE_FILENAME']
 
-        dest_sentences_filename = params['DEST_ROOT_PATH'] + '/training.' + params['SRC_LAN']
-        dest_classes_filename = params['DEST_ROOT_PATH'] + '/training.class.' + params['SRC_LAN']
+        dest_sentences_filename = params['DEST_ROOT_PATH'] + '/training'
+        dest_classes_filename = params['DEST_ROOT_PATH'] + '/training.class'
         dest_sentences_file = open(dest_sentences_filename, 'w')
         dest_classes_file = open(dest_classes_filename, 'w')
-
         positive_file = open(pos_filename, 'r')
         for line in positive_file:
             dest_sentences_file.write(line)
