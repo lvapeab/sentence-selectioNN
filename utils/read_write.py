@@ -10,6 +10,7 @@ Modified by: Marc Bola\~nos
 
 import json
 import numpy as np
+import os
 ###
 # Helpers
 ###
@@ -156,46 +157,6 @@ def text_to_model(filepath):
     pass
 
 
-def print_qa(questions, answers_gt, answers_gt_original, answers_pred, 
-        era, similarity=_dirac, path=''):
-    """
-    In:
-        questions - list of questions
-        answers_gt - list of answers (after modifications like truncation)
-        answers_gt_original - list of answers (before modifications)
-        answers_pred - list of predicted answers
-        era - current era
-        similarity - measure that measures similarity between gt_original and prediction;
-            by default dirac measure
-        path - path for the output (if empty then stdout is used)
-            by fedault an empty path
-    Out:
-        the similarity score
-    """
-    assert(len(questions)==len(answers_gt))
-    assert(len(questions)==len(answers_pred))
-    output=['-'*50, 'Era {0}'.format(era)]
-    score = 0.0
-    for k, q in enumerate(questions):
-        a_gt=answers_gt[k]
-        a_gt_original=answers_gt_original[k]
-        a_p=answers_pred[k]
-        score += _dirac(a_p, a_gt_original)
-        if type(q[0]) is unicode:
-            tmp = unicode(
-                    'question: {0}\nanswer: {1}\nanswer_original: {2}\nprediction: {3}\n')
-        else:
-            tmp = 'question: {0}\nanswer: {1}\nanswer_original: {2}\nprediction: {3}\n'
-        output.append(tmp.format(q, a_gt, a_gt_original, a_p))
-    score = (score / len(questions))*100.0
-    output.append('Score: {0}'.format(score))
-    if path == '':
-        print('%s' % '\n'.join(map(str, output)))
-    else:
-        list2file(path, output)
-    return score
-
-
 def dict2file(mydict, path, title=None):
     """
     In:
@@ -212,4 +173,15 @@ def dict2file(mydict, path, title=None):
     else:
         output_list = tmp
     list2file(path, output_list, 'a')
+
+
+def create_dir_if_not_exists(directory):
+    """
+    Creates a directory if it doen't exist
+
+    :param directory: Directory to create
+    :return: None
+    """
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 

@@ -12,18 +12,20 @@ def build_dataset(params):
             logging.info('Building ' + params['DATASET_NAME'] + ' dataset')
         else:
             silence=True
-
-        base_path = params['DATA_ROOT_PATH']
+        base_path = params['DATA_ROOT_PATH'] + '/'
         name = params['DATASET_NAME']
         ds = Dataset(name, base_path, silence=silence)
 
         ##### OUTPUT DATA
         # Let's load the train, val and test splits of the target language sentences (outputs)
         #    the files include a sentence per line.
+        print params['CLASS_FILES']
         for split in params['CLASS_FILES'].keys():
-            ds.setOutput(base_path+'/'+params['CLASS_FILES'][split], split,
-                       type='categorical', id=params['OUTPUTS_IDS_DATASET'][0],
-                       sample_weights=params['SAMPLE_WEIGHTS'])
+            ds.setOutput(params['CLASS_FILES'][split],
+                         split,
+                         type='categorical',
+                         id=params['OUTPUTS_IDS_DATASET'][0],
+                         sample_weights=params['SAMPLE_WEIGHTS'])
 
         # INPUT DATA
         for split in params['TEXT_FILES'].keys():
@@ -31,16 +33,21 @@ def build_dataset(params):
                 build_vocabulary = True
             else:
                 build_vocabulary = False
-
-            ds.setInput(base_path+'/'+params['TEXT_FILES'][split]+params['SRC_LAN'], split,
-                       type='text', id=params['INPUTS_IDS_DATASET'][0],  pad_on_batch=params['PAD_ON_BATCH'],
-                       tokenization=params['TOKENIZATION_METHOD'], build_vocabulary=build_vocabulary,
-                       fill=params['FILL'], max_text_len=params['MAX_INPUT_TEXT_LEN'],
-                       max_words=params['INPUT_VOCABULARY_SIZE'], min_occ=params['MIN_OCCURRENCES_VOCAB'])
+            ds.setInput(params['TEXT_FILES'][split],
+                        split,
+                        type='text',
+                        id=params['INPUTS_IDS_DATASET'][0],
+                        pad_on_batch=params['PAD_ON_BATCH'],
+                        tokenization=params['TOKENIZATION_METHOD'],
+                        build_vocabulary=build_vocabulary,
+                        fill=params['FILL'],
+                        max_text_len=params['MAX_INPUT_TEXT_LEN'],
+                        max_words=params['INPUT_VOCABULARY_SIZE'],
+                        min_occ=params['MIN_OCCURRENCES_VOCAB'])
 
             if len(params['INPUTS_IDS_DATASET']) > 1:
                 if split == 'train':
-                    ds.setInput(base_path+'/'+params['TEXT_FILES'][split]+params['TRG_LAN'], split,
+                    ds.setInput(params['TEXT_FILES'][split]+params['TRG_LAN'], split,
                                type='text', id=params['INPUTS_IDS_DATASET'][1], required=False,
                                tokenization=params['TOKENIZATION_METHOD'], pad_on_batch=True,
                                build_vocabulary=params['OUTPUTS_IDS_DATASET'][0], offset=1,
