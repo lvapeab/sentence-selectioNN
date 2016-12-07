@@ -11,6 +11,7 @@ Modified by: Marc Bola\~nos
 import json
 import numpy as np
 import os
+import shutil
 ###
 # Helpers
 ###
@@ -183,5 +184,18 @@ def create_dir_if_not_exists(directory):
     :return: None
     """
     if not os.path.exists(directory):
+        os.makedirs(directory)
+
+def clean_dir(directory):
+    """
+    Creates (or empties) a directory
+    :param directory: Directory to create
+    :return: None
+    """
+    if os.path.exists(directory):
+        print '<<< Warning!: Deleting directory: %s >>>' % directory
+        shutil.rmtree(directory)
+        os.makedirs(directory)
+    else:
         os.makedirs(directory)
 

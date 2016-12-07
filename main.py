@@ -386,7 +386,7 @@ if __name__ == "__main__":
     except:
         print 'Overwritten arguments must have the form key=Value'
         exit(1)
-    utils.read_write.create_dir_if_not_exists(params['DEST_ROOT_PATH'])
+    utils.read_write.clean_dir(params['DEST_ROOT_PATH'])
     if params['MODE'] == 'training':
         logging.info('Running training.')
         train_model(params)
