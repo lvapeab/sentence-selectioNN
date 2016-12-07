@@ -306,7 +306,11 @@ def semisupervised_selection(params):
         pool_filename_src = new_pool_filename_src
         pool_filename_trg = new_pool_filename_trg
 
-        if len(neutral_lines_src) < 2* params['INSTANCES_TO_ADD']:
+        #Dirty hack for faster experimentation
+        if i == 0:
+            params['INSTANCES_TO_ADD']*=2
+
+        if len(neutral_lines_src) < 2*params['INSTANCES_TO_ADD']:
             logger.warning("We got out of neutral sentences (from the pool) to classify!. Stopping the process.")
             break
 
@@ -390,7 +394,7 @@ if __name__ == "__main__":
         logging.info('Running sampling.')
         apply_Clas_model(params)
     elif params['MODE'] == 'semisupervised-selection':
-        logging.info('Running semisuprevised selection.')
+        logging.info('Running semisupervised selection.')
         semisupervised_selection(params)
 
     logging.info('Done!')

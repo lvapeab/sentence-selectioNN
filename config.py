@@ -9,22 +9,22 @@ def load_parameters():
     FILL = 'end'                                  # whether we fill the 'end' or the 'start' of the sentence with 0s
     SRC_LAN = 'en'                                # Input language
     TRG_LAN = 'fr'                                # Language of the outputs
-    MODE = 'training'                             # 'training', 'sampling', 'semisupervised-selection'
+    MODE = 'semisupervised-selection'             # 'training', 'sampling', 'semisupervised-selection'
 
     BINARY_SELECTION = True
     ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
     DATA_ROOT_PATH = ROOT_PATH + 'DATA/Emea-Euro/En-Fr'
-    DEST_ROOT_PATH = ROOT_PATH + 'Selection'
+    DEST_ROOT_PATH = ROOT_PATH + 'Selection-Keras/' + SRC_LAN + SRC_LAN
     DEBUG = True
     INSTANCES_TO_ADD = 50000
     if BINARY_SELECTION:
-        POSITIVE_FILENAME = 'rt-polarity.pos' #'EMEA.en-fr.Sin-repetidas'
-        NEGATIVE_FILENAME = 'rt-polarity.neg' #'dev'
+        POSITIVE_FILENAME = 'EMEA.en-fr.Sin-repetidas'
+        NEGATIVE_FILENAME = 'dev'
         if 'semisupervised' in MODE:
             POOL_FILENAME = 'training'
 
-    TEXT_FILES = {'val': 'val.' + SRC_LAN}
-    CLASS_FILES = {'val': 'val.class'}
+    TEXT_FILES = {} #{'val': 'val.' + SRC_LAN}
+    CLASS_FILES = {}#{'val': 'val.class'}
 
     # Dataset parameters
     INPUTS_IDS_DATASET = ['input_text']           # Corresponding inputs of the dataset
@@ -34,8 +34,8 @@ def load_parameters():
 
     # Evaluation params
     METRICS = ['multilabel_metrics']              # Metric used for evaluating model after each epoch (leave empty if only prediction is required)
-    EVAL_ON_SETS = ['val']                        # Possible values: 'train', 'val' and 'test' (external evaluator)
-    EVAL_ON_SETS_KERAS = ['val']                  # Possible values: 'train', 'val' and 'test' (Keras' evaluator)
+    EVAL_ON_SETS = []                             # Possible values: 'train', 'val' and 'test' (external evaluator)
+    EVAL_ON_SETS_KERAS = []                       # Possible values: 'train', 'val' and 'test' (Keras' evaluator)
     START_EVAL_ON_EPOCH = 1                       # First epoch where the model will be evaluated
     EVAL_EACH_EPOCHS = True                       # Select whether evaluate between N epochs or N updates
     EVAL_EACH = 1                                 # Sets the evaluation frequency (epochs or updates)
@@ -76,7 +76,7 @@ def load_parameters():
     SAMPLE_WEIGHTS = False  # Select whether we use a weights matrix (mask) for the data outputs
 
     # Training parameters
-    MAX_EPOCH =  14              # Stop when computed this number of epochs
+    MAX_EPOCH =  10              # Stop when computed this number of epochs
     BATCH_SIZE = 768             # Training batch size
     N_ITER = 15                  # Iterations to perform of the semisupervised selection
 
