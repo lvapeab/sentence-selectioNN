@@ -13,20 +13,20 @@ def load_parameters():
                                                   # be greater than 0 and EVAL_ON_SETS will be used)
     BINARY_SELECTION = True
     ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
-    DATA_ROOT_PATH = ROOT_PATH + 'DATA'
+    DATA_ROOT_PATH = ROOT_PATH + 'DATA/Emea-Euro/En-Fr'
     DEST_ROOT_PATH = ROOT_PATH + 'Selection'
     DEBUG = True
-    INSTANCES_TO_ADD = 300
+    INSTANCES_TO_ADD = 50000
     if BINARY_SELECTION:
-        POSITIVE_FILENAME = 'rt-polarity.pos'
-        NEGATIVE_FILENAME = 'rt-polarity.neg'
+        POSITIVE_FILENAME = 'EMEA.en-fr.Sin-repetidas'
+        NEGATIVE_FILENAME = 'dev'
         if 'semisupervised' in MODE:
             POOL_FILENAME = 'training'
 
-    TEXT_FILES = {'train': 'training.' + SRC_LAN,
-                  'val': 'val.' + SRC_LAN}
-    CLASS_FILES = {'train': 'training.class',
-                   'val': 'val.class'}
+    TEXT_FILES = {}#'train': 'training.' + SRC_LAN,
+                   #'val': 'val.' + SRC_LAN}
+    CLASS_FILES = {}#'train': 'training.class',
+                    #'val': 'val.class'}
 
     # Dataset parameters
     INPUTS_IDS_DATASET = ['input_text']           # Corresponding inputs of the dataset
@@ -35,7 +35,7 @@ def load_parameters():
     OUTPUTS_IDS_MODEL = ['class']                 # Corresponding outputs of the built model
     # Evaluation params
     METRICS = ['multilabel_metrics']              # Metric used for evaluating model after each epoch (leave empty if only prediction is required)
-    EVAL_ON_SETS = ['val']                        # Possible values: 'train', 'val' and 'test' (external evaluator)
+    EVAL_ON_SETS = []                             # Possible values: 'train', 'val' and 'test' (external evaluator)
     EVAL_ON_SETS_KERAS = []                       # Possible values: 'train', 'val' and 'test' (Keras' evaluator)
     START_EVAL_ON_EPOCH = 1                       # First epoch where the model will be evaluated
     EVAL_EACH_EPOCHS = True                       # Select whether evaluate between N epochs or N updates
@@ -78,7 +78,7 @@ def load_parameters():
 
     # Training parameters
     MAX_EPOCH =  4               # Stop when computed this number of epochs
-    BATCH_SIZE = 128             # Training batch size
+    BATCH_SIZE = 768             # Training batch size
     N_ITER = 15                  # Iterations to perform of the semisupervised selection
 
     HOMOGENEOUS_BATCHES = False  # Use batches with homogeneous output lengths for every minibatch (Dangerous!)

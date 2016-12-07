@@ -170,8 +170,8 @@ def semisupervised_selection(params):
     pool_filename_src = params['DATA_ROOT_PATH'] + '/' + initial_pool_filename + '.' + params['SRC_LAN']
     pool_filename_trg = params['DATA_ROOT_PATH'] + '/' + initial_pool_filename + '.' + params['TRG_LAN']
 
-
     for i in range(params['N_ITER']):
+
         print "------------------ Starting iteration", i, "------------------"
         new_pos_filename_src = params['DEST_ROOT_PATH'] + '/' + initial_pos_filename + '_' + str(i) + '.' + params['SRC_LAN']
         new_pos_filename_trg = params['DEST_ROOT_PATH'] + '/' + initial_pos_filename + '_' + str(i) + '.' + params['TRG_LAN']
@@ -306,6 +306,9 @@ def semisupervised_selection(params):
         pool_filename_src = new_pool_filename_src
         pool_filename_trg = new_pool_filename_trg
 
+        if len(neutral_lines_src) < 2* params['INSTANCES_TO_ADD']:
+            logger.warning("We got out of neutral sentences (from the pool) to classify!. Stopping the process.")
+            break
 
 def buildCallbacks(params, model, dataset):
     """
