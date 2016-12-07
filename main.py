@@ -19,7 +19,7 @@ def train_model(params):
         Main function
     """
 
-    if(params['RELOAD'] > 0):
+    if params['RELOAD'] > 0:
         logging.info('Resuming training.')
 
     check_params(params)
@@ -34,7 +34,7 @@ def train_model(params):
     ###########
 
     ########### Build model
-    if(params['RELOAD'] == 0): # build new model
+    if params['RELOAD'] == 0: # build new model
         text_class_model = Text_Classification_Model(params, type=params['MODEL_TYPE'], verbose=params['VERBOSE'],
                                               model_name=params['MODEL_NAME'], vocabularies=dataset.vocabulary,
                                               store_path=params['STORE_PATH'])
@@ -382,17 +382,15 @@ if __name__ == "__main__":
     except:
         print 'Overwritten arguments must have the form key=Value'
         exit(1)
-
-    if(params['MODE'] == 'training'):
+    utils.read_write.create_dir_if_not_exists(params['DEST_ROOT_PATH'])
+    if params['MODE'] == 'training':
         logging.info('Running training.')
-        utils.read_write.create_dir_if_not_exists(params['DEST_ROOT_PATH'])
         train_model(params)
-    elif(params['MODE'] == 'sampling'):
+    elif params['MODE'] == 'sampling':
         logging.info('Running sampling.')
         apply_Clas_model(params)
-    elif(params['MODE'] == 'semisupervised-selection'):
+    elif params['MODE'] == 'semisupervised-selection':
         logging.info('Running semisuprevised selection.')
-        utils.read_write.create_dir_if_not_exists(params['DEST_ROOT_PATH'])
         semisupervised_selection(params)
 
     logging.info('Done!')

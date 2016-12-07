@@ -253,19 +253,13 @@ class Text_Classification_Model(CNN_Model):
                                        trainable=params['GLOVE_VECTORS_TRAINABLE'],
                                        W_regularizer=l2(params['WEIGHT_DECAY']),
                                        mask_zero=True)(src_text)
+        sentence_embedding = Regularize(sentence_embedding, params, name='source_word_embedding')
 
         for activation, dimension in params['ADDITIONAL_EMBEDDING_LAYERS']:
             sentence_embedding = TimeDistributed(Dense(dimension, name='%s_1'%activation, activation=activation,
                                                W_regularizer=l2(params['WEIGHT_DECAY'])))(sentence_embedding)
-            if params['USE_BATCH_NORMALIZATION']:
-                sentence_embedding = BatchNormalization(name='batch_normalization_image_embedding',
-                                                W_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding)
-            if params['USE_PRELU']:
-                sentence_embedding = PReLU(W_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding)
-            if params['USE_DROPOUT']:
-                sentence_embedding = Dropout(0.5)(sentence_embedding)
-            if params['USE_L2']:
-                sentence_embedding = Lambda(L2_norm)(sentence_embedding)
+            sentence_embedding = Regularize(sentence_embedding, params, name='%s_1'%activation)
+
 
         out_layer = Bidirectional(LSTM(params['LSTM_ENCODER_HIDDEN_SIZE'],
                                              W_regularizer=l2(params['WEIGHT_DECAY']),
@@ -273,6 +267,7 @@ class Text_Classification_Model(CNN_Model):
                                              b_regularizer=l2(params['WEIGHT_DECAY']),
                                              return_sequences=False),
                                         name='bidirectional_encoder')(sentence_embedding)
+        out_layer = Regularize(out_layer, params, name='out_layer')
 
         # Optional deep ouput
         for i, (activation, dimension) in enumerate(params['DEEP_OUTPUT_LAYERS']):
@@ -285,14 +280,7 @@ class Text_Classification_Model(CNN_Model):
                                   activation=activation,
                                   W_regularizer=l2(params['WEIGHT_DECAY']),
                                   name=activation+'_%d'%i)(out_layer)
-
-            if params['USE_BATCH_NORMALIZATION']:
-                out_layer = BatchNormalization(name='batch_normalization_image_embedding',
-                                              W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
-            if params['USE_PRELU']:
-                out_layer = PReLU(W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
-            if params['USE_DROPOUT']:
-                out_layer = Dropout(0.5)(out_layer)
+            out_layer = Regularize(out_layer, params, name=activation+'_%d'%i)
 
         # Softmax
         output = Dense(params['N_CLASSES'],
