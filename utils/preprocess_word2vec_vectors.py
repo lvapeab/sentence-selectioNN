@@ -3,8 +3,9 @@ import numpy as np
 # Parameters
 ROOT_PATH = '/media/HDD_2TB/DATASETS/'
 base_path = ROOT_PATH + 'cnn_polarity/DATA/'
-vectors_path = base_path + 'word2vec_bin.en'
-dest_file = 'word2vec.en'
+language = 'de'
+vectors_path = base_path + 'word2vec_bin.' + language
+dest_file = 'word2vec.' + language
 
 
 def word2vec2npy(v_path, base_path_save, dest_filename):
