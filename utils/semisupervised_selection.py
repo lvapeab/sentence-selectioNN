@@ -1,9 +1,11 @@
 import numpy as np
 
+
 def process_prediction_probs(prediction_probs, n_intances_to_add, pool_src, pool_trg):
+
     probs = np.array([], dtype="float32")
     for batch in prediction_probs:
-        probs=np.append(probs, batch)
+        probs = np.append(probs, batch)
     probs = probs.reshape(-1, 2)
     top_positive_positions = probs.argsort(axis=0)[:, 0][:n_intances_to_add]
     top_negative_positions = probs.argsort(axis=0)[:, 1][:n_intances_to_add]
@@ -16,7 +18,7 @@ def process_prediction_probs(prediction_probs, n_intances_to_add, pool_src, pool
     pool_file_src = open(pool_src)
     pool_file_trg = open(pool_trg)
 
-    for i, (line_src, line_trg) in enumerate(zip (pool_file_src, pool_file_trg)):
+    for i, (line_src, line_trg) in enumerate(zip(pool_file_src, pool_file_trg)):
         if i in top_negative_positions:
             negative_lines.append(line_src)
         elif i in top_positive_positions:
@@ -30,6 +32,7 @@ def process_prediction_probs(prediction_probs, n_intances_to_add, pool_src, pool
     pool_file_trg.close()
 
     return positive_lines_src, positive_lines_trg, negative_lines, neutral_lines_src, neutral_lines_trg
+
 
 def update_config_params(params,
                          pos_filename,
@@ -52,8 +55,8 @@ def process_files_binary_classification(params, i=0):
         pos_filename = params['POSITIVE_FILENAME']
         neg_filename = params['NEGATIVE_FILENAME']
 
-        dest_sentences_filename = params['DEST_ROOT_PATH'] + '/training'
-        dest_classes_filename = params['DEST_ROOT_PATH'] + '/training.class'
+        dest_sentences_filename = params['DEST_ROOT_PATH'] + '/training_pos_neg_' + str(i) + '_tmp'
+        dest_classes_filename = params['DEST_ROOT_PATH'] + '/training_pos_neg_%d_tmp.class' % i
         dest_sentences_file = open(dest_sentences_filename, 'w')
         dest_classes_file = open(dest_classes_filename, 'w')
         positive_file = open(pos_filename, 'r')
@@ -72,4 +75,4 @@ def process_files_binary_classification(params, i=0):
         params['TEXT_FILES']['train'] = dest_sentences_filename
         params['CLASS_FILES']['train'] = dest_classes_filename
 
-    return  params
+    return params

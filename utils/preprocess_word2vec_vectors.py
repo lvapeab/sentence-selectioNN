@@ -2,16 +2,17 @@ import numpy as np
 
 # Parameters
 ROOT_PATH = '/media/HDD_2TB/DATASETS/'
-base_path = ROOT_PATH +'cnn_polarity/DATA/'
+base_path = ROOT_PATH + 'cnn_polarity/DATA/'
 vectors_path = base_path + 'word2vec_bin.en'
 dest_file = 'word2vec.en'
 
-def word2vec2npy(vectors_path, base_path_save, dest_file):
+
+def word2vec2npy(v_path, base_path_save, dest_filename):
 
     word_vecs = dict()
-    print "Loading vectors from %s"%(vectors_path)
+    print "Loading vectors from %s" % v_path
 
-    with open(vectors_path, "rb") as f:
+    with open(v_path, "rb") as f:
         header = f.readline()
         vocab_size, layer1_size = map(int, header.split())
         binary_len = np.dtype('float32').itemsize * layer1_size
@@ -29,11 +30,11 @@ def word2vec2npy(vectors_path, base_path_save, dest_file):
             word_vecs[word] = np.fromstring(f.read(binary_len), dtype='float32')
             i += 1
             if i % 1000 == 0:
-                print "Processed %d vectors (%.2f %%)\r"%(i,100*float(i)/vocab_size),
+                print "Processed %d vectors (%.2f %%)\r" % (i, 100 * float(i) / vocab_size),
 
     # Store dict
-    print "Saving word vectors in %s" % (base_path_save +'/' + dest_file + '.npy')
-    np.save(base_path_save + '/' + dest_file + '.npy', word_vecs)
+    print "Saving word vectors in %s" % (base_path_save + '/' + dest_filename + '.npy')
+    np.save(base_path_save + '/' + dest_filename + '.npy', word_vecs)
     print
 
 if __name__ == "__main__":

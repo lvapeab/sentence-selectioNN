@@ -14,7 +14,7 @@ def load_parameters():
     BINARY_SELECTION = True
     ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
     DATA_ROOT_PATH = ROOT_PATH + 'DATA/Emea-Euro/En-Fr'
-    DEST_ROOT_PATH = ROOT_PATH + 'Selection-Keras/' + SRC_LAN + SRC_LAN
+    DEST_ROOT_PATH = ROOT_PATH + 'Selection-Keras/' + SRC_LAN + TRG_LAN
     DEBUG = True
     INSTANCES_TO_ADD = 50000
     if BINARY_SELECTION:
