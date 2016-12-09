@@ -7,18 +7,18 @@ def load_parameters():
     # Input data params
     DATASET_NAME = 'cnn_polarity'
     FILL = 'end'                                  # whether we fill the 'end' or the 'start' of the sentence with 0s
-    SRC_LAN = 'en'                                # Input language
-    TRG_LAN = 'fr'                                # Language of the outputs
+    SRC_LAN = 'de'                                # Input language
+    TRG_LAN = 'en'                                # Language of the outputs
     MODE = 'semisupervised-selection'             # 'training', 'sampling', 'semisupervised-selection'
 
     BINARY_SELECTION = True
     ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
-    DATA_ROOT_PATH = ROOT_PATH + 'DATA/Emea-Euro/En-Fr'
+    DATA_ROOT_PATH = ROOT_PATH + 'DATA/Emea-Euro/De-En'
     DEST_ROOT_PATH = ROOT_PATH + 'Selection-Keras/' + SRC_LAN + TRG_LAN
     DEBUG = True
     INSTANCES_TO_ADD = 50000
     if BINARY_SELECTION:
-        POSITIVE_FILENAME = 'EMEA.en-fr.Sin-repetidas'
+        POSITIVE_FILENAME = 'EMEA.de-en.Sin-repetidas'
         NEGATIVE_FILENAME = 'dev'
         if 'semisupervised' in MODE:
             POOL_FILENAME = 'training'
@@ -86,16 +86,17 @@ def load_parameters():
     WRITE_VALID_SAMPLES = True   # Write valid samples in file
 
 
+    # Model parameters
+    MODEL_TYPE = 'CNN_Classifier'
+
     # Input text parameters
     INPUT_VOCABULARY_SIZE = 0         # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
     MIN_OCCURRENCES_VOCAB = 0  # Minimum number of occurrences allowed for the words in the vocabulay. Set to 0 for using them all.
-    PAD_ON_BATCH = False
+    PAD_ON_BATCH = 'CNN' not in MODEL_TYPE
 
     # Output classes parameters
     N_CLASSES = 2
 
-    # Model parameters
-    MODEL_TYPE = 'BLSTM_Classifier'
 
     GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/cnn_polarity/DATA/word2vec.%s.npy' % SRC_LAN  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
     GLOVE_VECTORS_TRAINABLE = True    # Finetune or not the word embedding vectors.
