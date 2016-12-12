@@ -7,26 +7,34 @@ def load_parameters():
     # Input data params
     DATASET_NAME = 'cnn_polarity'
     FILL = 'end'                                  # whether we fill the 'end' or the 'start' of the sentence with 0s
-    SRC_LAN = 'sn'                                # Language of the outputs
+    SRC_LAN = 'de'                                # Input language
+    TRG_LAN = 'en'                                # Language of the outputs
+    MODE = 'semisupervised-selection'             # 'training', 'sampling', 'semisupervised-selection'
 
-    DATA_ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
+    BINARY_SELECTION = True
+    ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
+    DATA_ROOT_PATH = ROOT_PATH + 'DATA/Emea-Euro/De-En'
+    DEST_ROOT_PATH = ROOT_PATH + 'Selection-Keras/' + SRC_LAN + TRG_LAN
+    DEBUG = True
+    INSTANCES_TO_ADD = 50000
+    if BINARY_SELECTION:
+        POSITIVE_FILENAME = 'EMEA.de-en.Sin-repetidas'
+        NEGATIVE_FILENAME = 'dev'
+        if 'semisupervised' in MODE:
+            POOL_FILENAME = 'training'
 
-
-    # SRC_LAN or TRG_LAN will be added to the file names
-    TEXT_FILES = {'train': 'DATA/training.',
-                  'val': 'DATA/val.'}
-
-    CLASS_FILES = {'train': 'DATA/training.class',
-                   'val': 'DATA/val.class'}
+    TEXT_FILES = {} #{'val': 'val.' + SRC_LAN}
+    CLASS_FILES = {}#{'val': 'val.class'}
 
     # Dataset parameters
-    INPUTS_IDS_DATASET = ['input_text']       # Corresponding inputs of the dataset
-    OUTPUTS_IDS_DATASET = ['class']           # Corresponding outputs of the dataset
-    INPUTS_IDS_MODEL = ['input_text']         # Corresponding inputs of the built model
-    OUTPUTS_IDS_MODEL = ['class']             # Corresponding outputs of the built model
+    INPUTS_IDS_DATASET = ['input_text']           # Corresponding inputs of the dataset
+    OUTPUTS_IDS_DATASET = ['class']               # Corresponding outputs of the dataset
+    INPUTS_IDS_MODEL = ['input_text']             # Corresponding inputs of the built model
+    OUTPUTS_IDS_MODEL = ['class']                 # Corresponding outputs of the built model
+
     # Evaluation params
     METRICS = ['multilabel_metrics']              # Metric used for evaluating model after each epoch (leave empty if only prediction is required)
-    EVAL_ON_SETS = ['train', 'val']                        # Possible values: 'train', 'val' and 'test' (external evaluator)
+    EVAL_ON_SETS = []                             # Possible values: 'train', 'val' and 'test' (external evaluator)
     EVAL_ON_SETS_KERAS = []                       # Possible values: 'train', 'val' and 'test' (Keras' evaluator)
     START_EVAL_ON_EPOCH = 1                       # First epoch where the model will be evaluated
     EVAL_EACH_EPOCHS = True                       # Select whether evaluate between N epochs or N updates
@@ -62,14 +70,15 @@ def load_parameters():
     CLASS_MODE = 'categorical'
 
     OPTIMIZER = 'Adam'      # Optimizer
-    LR = 0.0001              # (recommended values - Adam 0.001 - Adadelta 1.0
+    LR = 0.0001             # (recommended values - Adam 0.001 - Adadelta 1.0
     WEIGHT_DECAY = 1e-4     # L2 regularization
-    CLIP_C = 9.            # During training, clip gradients to this norm
+    CLIP_C = 9.             # During training, clip gradients to this norm
     SAMPLE_WEIGHTS = False  # Select whether we use a weights matrix (mask) for the data outputs
 
     # Training parameters
-    MAX_EPOCH = 500         # Stop when computed this number of epochs
-    BATCH_SIZE = 128        #  Training batch size
+    MAX_EPOCH =  10              # Stop when computed this number of epochs
+    BATCH_SIZE = 768             # Training batch size
+    N_ITER = 15                  # Iterations to perform of the semisupervised selection
 
     HOMOGENEOUS_BATCHES = False  # Use batches with homogeneous output lengths for every minibatch (Dangerous!)
     PARALLEL_LOADERS = 8         # Parallel data batch loaders
@@ -77,23 +86,24 @@ def load_parameters():
     WRITE_VALID_SAMPLES = True   # Write valid samples in file
 
 
+    # Model parameters
+    MODEL_TYPE = 'CNN_Classifier'
+
     # Input text parameters
     INPUT_VOCABULARY_SIZE = 0         # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
     MIN_OCCURRENCES_VOCAB = 0  # Minimum number of occurrences allowed for the words in the vocabulay. Set to 0 for using them all.
-    PAD_ON_BATCH = False
+    PAD_ON_BATCH = 'CNN' not in MODEL_TYPE
 
     # Output classes parameters
     N_CLASSES = 2
 
-    # Model parameters
-    MODEL_TYPE = 'CNN_Classifier'
 
-    GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/VQA/Glove/glove_300.npy'  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
+    GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/cnn_polarity/DATA/word2vec.%s.npy' % SRC_LAN  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
     GLOVE_VECTORS_TRAINABLE = True    # Finetune or not the word embedding vectors.
     TEXT_EMBEDDING_HIDDEN_SIZE = 300  # When using pretrained word embeddings, this parameter must match with the word embeddings size
 
     # LSTM layers dimensions (Only used if needed)
-    LSTM_ENCODER_HIDDEN_SIZE = 289   # For models with LSTM encoder
+    LSTM_ENCODER_HIDDEN_SIZE = 300   # For models with LSTM encoder
 
     # FC layers for initializing the first LSTM state
     # Here we should only specify the activation function of each layer (as they have a potentially fixed size)
@@ -118,12 +128,12 @@ def load_parameters():
     # additional Fully-Connected layers's sizes applied before softmax.
     # Here we should specify the activation function and the output dimension
     # (e.g DEEP_OUTPUT_LAYERS = [('tanh', 600), ('relu',400), ('relu':200)])
-    DEEP_OUTPUT_LAYERS = [('linear', 200), ('linear', 100)]
+    DEEP_OUTPUT_LAYERS = [('relu', 200), ('linear', 100)]
 
 
 
     # Regularizers
-    USE_DROPOUT = True                            # Use dropout
+    USE_DROPOUT = False                           # Use dropout
     DROPOUT_P = 0.5                               # Percentage of units to drop
 
     USE_NOISE = True                              # Use gaussian noise during training
@@ -153,8 +163,6 @@ def load_parameters():
     RELOAD = 0                                         # If 0 start training from scratch, otherwise the model
                                                        # Saved on epoch 'RELOAD' will be used
     REBUILD_DATASET = True                             # Build again or use stored instance
-    MODE = 'training'                                  # 'training' or 'sampling' (if 'sampling' then RELOAD must
-                                                       # be greater than 0 and EVAL_ON_SETS will be used)
 
     # Extra parameters for special trainings
     TRAIN_ON_TRAINVAL = False                          # train the model on both training and validation sets combined

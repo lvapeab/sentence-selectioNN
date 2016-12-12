@@ -1,10 +1,11 @@
 import numpy as np
 
+
+
 # Parameters
-#ROOT_PATH =  '/home/lvapeab/smt/tasks/image_desc/VQA/'
-ROOT_PATH = '/media/HDD_2TB/DATASETS/VQA/'
-base_path = ROOT_PATH +'Glove/'
-glove_path = base_path + 'glove.42B.300d.txt'
+ROOT_PATH = '/media/HDD_2TB/DATASETS/'
+base_path = ROOT_PATH +'cnn_polarity/DATA/'
+vectors_path = base_path + 'glove.42B.300d.txt'
 dest_file = 'glove_300'
 
 def glove2npy(glove_path, base_path_save, dest_file):
@@ -27,8 +28,7 @@ def glove2npy(glove_path, base_path_save, dest_file):
     print
     # Store dict
     print "Saving word vectors in %s" % (base_path_save +'/' + dest_file + '.npy')
-    #create_dir_if_not_exists(base_path_save)
     np.save(base_path_save + '/' + dest_file + '.npy', vecs_dict)
     print
 if __name__ == "__main__":
-    glove2npy(glove_path, base_path, dest_file)
+    glove2npy(vectors_path, base_path, dest_file)
