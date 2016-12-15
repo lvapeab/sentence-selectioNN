@@ -46,12 +46,13 @@ Assuming you have a corpus:
 
 ## Citation
 
-If you use this code for any purpose, please, do not forget to cite the following paper:
-``
+If you use this code for any purpose, please cite the following paper:
+
+```
 Peris Á., Chinea-Rios M., Casacuberta F. 
 Neural Networks Classifier for Data Selection in Statistical Machine Translation. 
 arXiv preprint arXiv:?. 2016.
-``
+```
 
 
 ## Contact
