@@ -11,6 +11,9 @@ backend.
 
 * BLSTMs / CNNs classifiers. Easy to extend. 
 
+* [Glove](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_glove_vectors.py) / [Word2Vec](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_word2vec_vectors.py) pretrained word vectors.  
+
+
 * Iterative semi-supervised selection from top/bottom scoring sentences from an out-of-domain corpus. 
 
 
@@ -43,11 +46,13 @@ Assuming you have a corpus:
 
 ## Citation
 
-```
+If you use this code for any purpose, please, do not forget to cite the following paper:
+``
+Peris Á., Chinea-Rios M., Casacuberta F. 
+Neural Networks Classifier for Data Selection in Statistical Machine Translation. 
+arXiv preprint arXiv:?. 2016.
+``
 
-TODO
-
-```
 
 ## Contact
 
