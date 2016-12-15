@@ -87,7 +87,7 @@ def load_parameters():
 
 
     # Model parameters
-    MODEL_TYPE = 'CNN_Classifier'
+    MODEL_TYPE = 'BLSTM_Classifier'
 
     # Input text parameters
     INPUT_VOCABULARY_SIZE = 0         # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
@@ -114,7 +114,7 @@ def load_parameters():
 
     # CNN layers parameters (Only used if needed)
     NUM_FILTERS = 100
-    FILTER_SIZES = [3,4,5]
+    FILTER_SIZES = [3, 4, 5]
     POOL_LENGTH = 2
     CNN_ACTIVATION = 'relu'
 

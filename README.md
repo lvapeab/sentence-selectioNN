@@ -1,27 +1,34 @@
-# CNN_Sel
-Theano + Keras sentence classification.
-
-Based on the EMNLP paper "[Convolutional Neural Networks for Sentence Classification](http://www.aclweb.org/anthology/D14-1181)".
-
+# Neural Networks for Data Selection 
+ 
+This repository contains the code for the paper "[Neural Networks Classifier for Data Selection in Statistical Machine Translation](*url*)"
+ 
 Built upon our fork of [Keras](https://github.com/MarcBS/keras) framework and tested for the [Theano](http://deeplearning.net/software/theano)
 backend.
 
 ## Features
-WIP
+
+* Neural network-based sentence classifiers.
+
+* BLSTMs / CNNs classifiers. Easy to extend. 
+
+* Iterative semi-supervised selection from top/bottom scoring sentences from an out-of-domain corpus. 
+
+
 ## Architecture
-WIP
+
+![NN_Classifier](./sentence_classifier.png)
+
 
 ## Installation
 
 CNN_Sel requires the following libraries:
 
- - [Our version of Keras](https://github.com/MarcBS/keras) v1.0.4 or newer
- - [Staged Keras Wrapper](https://github.com/MarcBS/staged_keras_wrapper) v0.5 or newer
+ - [Our version of Keras](https://github.com/MarcBS/keras) 
+ - [Staged Keras Wrapper](https://github.com/MarcBS/staged_keras_wrapper) 
 
 ## Instructions:
 
-
-Assuming you have a dataset with sentences and classesframes:
+Assuming you have a corpus:
 
 1) Check out the inputs/outputs of your model in `data_engine/prepare_data.py`
 
@@ -37,6 +44,9 @@ Assuming you have a dataset with sentences and classesframes:
 ## Citation
 
 ```
+
+TODO
+
 ```
 
 ## Contact
