@@ -16,7 +16,7 @@ backend.
 
 ## Architecture
 
-![NN_Classifier](./sentence_classifier.png)
+![NN_Classifier](./docs/sentence_classifier.png)
 
 
 ## Installation
