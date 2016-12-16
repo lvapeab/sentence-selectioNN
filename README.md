@@ -2,7 +2,7 @@
  
 This repository contains the code for the paper "[Neural Networks Classifier for Data Selection in Statistical Machine Translation](*url*)"
  
-Built upon our fork of [Keras](https://github.com/MarcBS/keras) framework and tested for the [Theano](http://deeplearning.net/software/theano)
+Built upon our fork of [Keras](https://github.com/MarcBS/keras) and tested for the [Theano](http://deeplearning.net/software/theano)
 backend.
 
 ## Features
@@ -11,14 +11,10 @@ backend.
 
 * BLSTMs / CNNs classifiers. Easy to extend. 
 
-* [Glove](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_glove_vectors.py) / [Word2Vec](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_word2vec_vectors.py) pretrained word vectors.  
+* Support for include Glove or Word2Vec pretrained word vectors ([binary](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_binary_vectors.py) or [text](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_text_vectors.py) formats).   
 
 
 * Iterative semi-supervised selection from top/bottom scoring sentences from an out-of-domain corpus. 
-
-
-
-
 
 ## Installation
 
@@ -33,7 +29,7 @@ Assuming you have a corpus:
 
 1) Check out the inputs/outputs of your model in `data_engine/prepare_data.py`
 
-2) Set a model configuration in  `config.py`
+2) Set a model configuration in `config.py`
 
 3) Train!:
 
@@ -43,7 +39,7 @@ Assuming you have a corpus:
 
 ## Architecture
 
-See "[the paper](*url*)" for a more detailed description.
+See [the paper](*url*) for a more detailed description.
 
 ![NN_Classifier](./docs/sentence_classifier.png)
 

@@ -8,23 +8,26 @@ def load_parameters():
     DATASET_NAME = 'cnn_polarity'
     FILL = 'end'                                  # whether we fill the 'end' or the 'start' of the sentence with 0s
     SRC_LAN = 'de'                                # Input language
-    TRG_LAN = 'en'                                # Language of the outputs
+    TRG_LAN = 'en'                                # Outputs language
     MODE = 'semisupervised-selection'             # 'training', 'sampling', 'semisupervised-selection'
 
-    BINARY_SELECTION = True
-    ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME
-    DATA_ROOT_PATH = ROOT_PATH + 'DATA/Emea-Euro/De-En'
-    DEST_ROOT_PATH = ROOT_PATH + 'Selection-Keras/' + SRC_LAN + TRG_LAN
-    DEBUG = True
-    INSTANCES_TO_ADD = 50000
-    if BINARY_SELECTION:
-        POSITIVE_FILENAME = 'EMEA.de-en.Sin-repetidas'
-        NEGATIVE_FILENAME = 'dev'
-        if 'semisupervised' in MODE:
-            POOL_FILENAME = 'training'
+    BINARY_SELECTION = True                       # Binary classification problem (currently, 'semisupervised-selection' only supports BINARY_SELECTION)
+    # Path to data
+    ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME             # Root path to the data folder
+    DATA_ROOT_PATH = ROOT_PATH + 'DATA/Emea-Euro/De-En'                  # Path to the corpora folder
+    DEST_ROOT_PATH = ROOT_PATH + 'Selection-Keras/' + SRC_LAN + TRG_LAN  # Path to store results
+    DEBUG = False                                                        # If True, it will store temporal files
+    INSTANCES_TO_ADD = 50000                                             # 'r' parameter. Number of sentences added at each iteration
 
-    TEXT_FILES = {} #{'val': 'val.' + SRC_LAN}
-    CLASS_FILES = {}#{'val': 'val.class'}
+    if BINARY_SELECTION:
+        POSITIVE_FILENAME = 'EMEA.de-en.Sin-repetidas'                   # In-domain corpus (I)
+        NEGATIVE_FILENAME = 'dev'                                        # Initial negative corpus (N_0)
+        if 'semisupervised' in MODE:
+            POOL_FILENAME = 'training'                                   # Initial pool of out-of-domain sentences (G_0)
+
+    # Fill these dictionaries for a regular sentence classification task
+    TEXT_FILES = {}   #{'train': 'train.' + SRC_LAN, 'val': 'val.' + SRC_LAN}
+    CLASS_FILES = {}  #{'train': 'train.' + SRC_LAN.class, 'val': 'val.' + SRC_LAN.class}
 
     # Dataset parameters
     INPUTS_IDS_DATASET = ['input_text']           # Corresponding inputs of the dataset
@@ -40,77 +43,64 @@ def load_parameters():
     EVAL_EACH_EPOCHS = True                       # Select whether evaluate between N epochs or N updates
     EVAL_EACH = 1                                 # Sets the evaluation frequency (epochs or updates)
 
-    # Sampling params: Show some samples during training
-    SAMPLE_ON_SETS = []                           # Possible values: 'train', 'val' and 'test'
-    N_SAMPLES = 5                                 # Number of samples generated
-    START_SAMPLING_ON_EPOCH = 1                   # First epoch where the model will be evaluated
-    SAMPLE_EACH_UPDATES = 2500                    # Sampling frequency (default 450)
-
-
     # Early stop parameters
-    EARLY_STOP = True                  # Turns on/off the early stop protocol
-    PATIENCE = 15                      # We'll stop if the val STOP_METRIC does not improve after this number of evaluations
-    STOP_METRIC = 'accuracy'           # Metric for the stop
+    EARLY_STOP = True                             # Turns on/off the early stop protocol
+    PATIENCE = 15                                 # We'll stop if the val STOP_METRIC does not improve after this number of evaluations
+    STOP_METRIC = 'accuracy'                      # Metric for the stop
 
     # Word representation params
     TOKENIZATION_METHOD = 'tokenize_CNN_sentence' # Select which tokenization we'll apply:
 
-    # Input image parameters
-    DATA_AUGMENTATION = False                     # Apply data augmentation on input data (noise on features)
+    # Input text parameters
+    VOCABULARY_SIZE = 0                          # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
+    MIN_OCCURRENCES_VOCAB = 0                    # Minimum number of occurrences allowed for the words in the vocabulay. Set to 0 for using them all.
+    MAX_INPUT_TEXT_LEN = 50                      # Maximum length of the input sequence
 
     # Input text parameters
-    VOCABULARY_SIZE = 0        # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
-    MIN_OCCURRENCES_VOCAB = 0  # Minimum number of occurrences allowed for the words in the vocabulay. Set to 0 for using them all.
-    MAX_INPUT_TEXT_LEN = 50    # Maximum length of the input sequence
+    INPUT_VOCABULARY_SIZE = 0                    # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
+    MIN_OCCURRENCES_VOCAB = 0                    # Minimum number of occurrences allowed for the words in the vocabulay. Set to 0 for using them all.
 
-    CLASSIFIER_ACTIVATION = 'softmax'
+
 
     # Optimizer parameters (see model.compile() function)
     LOSS = 'categorical_crossentropy'
     CLASS_MODE = 'categorical'
 
-    OPTIMIZER = 'Adam'      # Optimizer
-    LR = 0.0001             # (recommended values - Adam 0.001 - Adadelta 1.0
-    WEIGHT_DECAY = 1e-4     # L2 regularization
-    CLIP_C = 9.             # During training, clip gradients to this norm
-    SAMPLE_WEIGHTS = False  # Select whether we use a weights matrix (mask) for the data outputs
+    OPTIMIZER = 'Adam'                           # Optimizer
+    LR = 0.0001                                  # (recommended values - Adam 0.001 - Adadelta 1.0
+    WEIGHT_DECAY = 1e-4                          # L2 regularization
+    CLIP_C = 9.                                  # During training, clip gradients to this norm
+    SAMPLE_WEIGHTS = False                       # Select whether we use a weights matrix (mask) for the data outputs
 
     # Training parameters
-    MAX_EPOCH =  10              # Stop when computed this number of epochs
-    BATCH_SIZE = 768             # Training batch size
-    N_ITER = 15                  # Iterations to perform of the semisupervised selection
+    MAX_EPOCH =  10                              # Stop when computed this number of epochs
+    BATCH_SIZE = 768                             # Training batch size
+    N_ITER = 15                                  # Iterations to perform of the semisupervised selection
 
-    HOMOGENEOUS_BATCHES = False  # Use batches with homogeneous output lengths for every minibatch (Dangerous!)
-    PARALLEL_LOADERS = 8         # Parallel data batch loaders
-    EPOCHS_FOR_SAVE = 1          # Number of epochs between model saves
-    WRITE_VALID_SAMPLES = True   # Write valid samples in file
+    HOMOGENEOUS_BATCHES = False                  # Use batches with homogeneous output lengths for every minibatch (Dangerous!)
+    PARALLEL_LOADERS = 8                         # Parallel data batch loaders
+    EPOCHS_FOR_SAVE = 1                          # Number of epochs between model saves
+    WRITE_VALID_SAMPLES = True                   # Write valid samples in file
 
 
     # Model parameters
-    MODEL_TYPE = 'BLSTM_Classifier'
+    MODEL_TYPE = 'BLSTM_Classifier'              # Model type. See model_zoo.py
+    CLASSIFIER_ACTIVATION = 'softmax'            # Last layer activation
+    PAD_ON_BATCH = 'CNN' not in MODEL_TYPE       # Padded batches
+    N_CLASSES = 2                                # Number of classes
 
-    # Input text parameters
-    INPUT_VOCABULARY_SIZE = 0         # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
-    MIN_OCCURRENCES_VOCAB = 0  # Minimum number of occurrences allowed for the words in the vocabulay. Set to 0 for using them all.
-    PAD_ON_BATCH = 'CNN' not in MODEL_TYPE
-
-    # Output classes parameters
-    N_CLASSES = 2
-
-
-    GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/cnn_polarity/DATA/word2vec.%s.npy' % SRC_LAN  # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
-    GLOVE_VECTORS_TRAINABLE = True    # Finetune or not the word embedding vectors.
-    TEXT_EMBEDDING_HIDDEN_SIZE = 300  # When using pretrained word embeddings, this parameter must match with the word embeddings size
+    # Word embedding parameters
+    GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/cnn_polarity/DATA/word2vec.%s.npy' % SRC_LAN   # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
+    GLOVE_VECTORS_TRAINABLE = True                                                          # Finetune or not the word embedding vectors.
+    TEXT_EMBEDDING_HIDDEN_SIZE = 300                                                        # When using pretrained word embeddings, this parameter must match with the word embeddings size
 
     # LSTM layers dimensions (Only used if needed)
-    LSTM_ENCODER_HIDDEN_SIZE = 300   # For models with LSTM encoder
+    LSTM_ENCODER_HIDDEN_SIZE = 300  # For models with LSTM encoder
 
     # FC layers for initializing the first LSTM state
     # Here we should only specify the activation function of each layer (as they have a potentially fixed size)
     # (e.g INIT_LAYERS = ['tanh', 'relu'])
     INIT_LAYERS = ['tanh']
-
-
 
     # CNN layers parameters (Only used if needed)
     NUM_FILTERS = 100
@@ -129,8 +119,6 @@ def load_parameters():
     # Here we should specify the activation function and the output dimension
     # (e.g DEEP_OUTPUT_LAYERS = [('tanh', 600), ('relu',400), ('relu':200)])
     DEEP_OUTPUT_LAYERS = [('relu', 200), ('linear', 100)]
-
-
 
     # Regularizers
     USE_DROPOUT = False                           # Use dropout
@@ -168,7 +156,6 @@ def load_parameters():
     TRAIN_ON_TRAINVAL = False                          # train the model on both training and validation sets combined
     FORCE_RELOAD_VOCABULARY = False                    # force building a new vocabulary from the training samples
                                                        # applicable if RELOAD > 1
-
     # ============================================
     parameters = locals().copy()
     return parameters
