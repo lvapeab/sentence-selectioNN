@@ -17,14 +17,12 @@ backend.
 * Iterative semi-supervised selection from top/bottom scoring sentences from an out-of-domain corpus. 
 
 
-## Architecture
 
-![NN_Classifier](./docs/sentence_classifier.png)
 
 
 ## Installation
 
-CNN_Sel requires the following libraries:
+`sentence-selectioNN` requires the following libraries:
 
  - [Our version of Keras](https://github.com/MarcBS/keras) 
  - [Staged Keras Wrapper](https://github.com/MarcBS/staged_keras_wrapper) 
@@ -39,9 +37,15 @@ Assuming you have a corpus:
 
 3) Train!:
 
-  ``
+  ```bash
  python main.py
- ``
+ ```
+
+## Architecture
+
+See "[the paper](*url*)" for a more detailed description.
+
+![NN_Classifier](./docs/sentence_classifier.png)
 
 
 ## Citation
