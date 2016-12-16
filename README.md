@@ -29,9 +29,11 @@ Assuming you have a corpus:
 
 1) Check out the inputs/outputs of your model in `data_engine/prepare_data.py`
 
-2) Set a model configuration in `config.py`
+2) If you want to use pretrained word vectors, use the preprocessing scripts for [binary](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_binary_vectors.py) or [text](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_text_vectors.py) for pretrained Glove or Word2Vec vectors. 
 
-3) Train!:
+3) Set a model configuration in `config.py`
+
+4) Train!:
 
   ```bash
  python main.py
