@@ -88,6 +88,7 @@ def load_parameters():
     CLASSIFIER_ACTIVATION = 'softmax'            # Last layer activation
     PAD_ON_BATCH = 'CNN' not in MODEL_TYPE       # Padded batches
     N_CLASSES = 2                                # Number of classes
+    DATA_AUGMENTATION = False                    # Apply data augmentation on input data (still unimplemented for text inputs)
 
     # Word embedding parameters
     GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/cnn_polarity/DATA/word2vec.%s.npy' % SRC_LAN   # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
