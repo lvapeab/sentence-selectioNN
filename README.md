@@ -1,6 +1,6 @@
 # Neural Networks for Data Selection 
  
-This repository contains the code for the paper "[Neural Networks Classifier for Data Selection in Statistical Machine Translation](*url*)"
+This repository contains the code for the paper "[Neural Networks Classifier for Data Selection in Statistical Machine Translation](http://arxiv.org/abs/1612.05555)"
  
 Built upon our fork of [Keras](https://github.com/MarcBS/keras) and tested for the [Theano](http://deeplearning.net/software/theano)
 backend.
@@ -41,7 +41,7 @@ Assuming you have a corpus:
 
 ## Architecture
 
-See [the paper](*url*) for a more detailed description.
+See [the paper](http://arxiv.org/abs/1612.05555) for a more detailed description.
 
 ![NN_Classifier](./docs/sentence_classifier.png)
 
