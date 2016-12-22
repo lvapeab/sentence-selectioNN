@@ -6,7 +6,7 @@ from keras.layers.recurrent import LSTM, GRU, LSTMCond, AttLSTM, AttLSTMCond, At
 from keras.layers.advanced_activations import PReLU
 from keras.layers.normalization import BatchNormalization, L2_norm
 from keras.layers.core import Dropout, Dense, Flatten, Activation, Lambda, MaxoutDense, MaskedMean, Reshape
-from keras.models import model_from_json, Sequential, Graph, Model
+from keras.models import model_from_json, Sequential, Model
 from keras.layers.convolutional import AveragePooling1D, Convolution1D, MaxPooling1D, Convolution2D, MaxPooling2D
 from keras.optimizers import Adam, RMSprop, Nadam, Adadelta
 from keras.regularizers import l2
@@ -97,7 +97,7 @@ class Text_Classification_Model(CNN_Model):
             Sets a new optimizer for the Text_Classification_Model.
         """
 
-        # compile differently depending if our model is 'Sequential' or 'Graph'
+        # compile differently depending if our model is 'Sequential' 
         if self.verbose > 0:
             logging.info("Preparing optimizer and compiling.")
         if self.params['OPTIMIZER'].lower() == 'adam':
