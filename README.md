@@ -11,7 +11,7 @@ backend.
 
 * BLSTMs / CNNs classifiers. Easy to extend. 
 
-* Support for include Glove or Word2Vec pretrained word vectors ([binary](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_binary_vectors.py) or [text](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_text_vectors.py) formats).   
+* Support for including Glove or Word2Vec pretrained word vectors ([binary](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_binary_vectors.py) or [text](https://github.com/lvapeab/sentence-selectioNN/blob/master/utils/preprocess_text_vectors.py) formats).   
 
 
 * Iterative semi-supervised selection from top/bottom scoring sentences from an out-of-domain corpus. 
