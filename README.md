@@ -41,9 +41,13 @@ Assuming you have a corpus:
 
 ## Architecture
 
-See [the paper](http://arxiv.org/abs/1612.05555) for a more detailed description.
+We support two different network architecture, BLSTM or CNN, both at monolingual or bilingual level. 
 
 ![NN_Classifier](./docs/sentence_classifier.png)
+
+
+
+Please, see [the paper](http://arxiv.org/abs/1612.05555) for a more detailed description of the model.
 
 
 ## Citation
@@ -53,7 +57,7 @@ If you use this code for any purpose, please cite the following paper:
 ```
 Peris Á., Chinea-Rios M., Casacuberta F. 
 Neural Networks Classifier for Data Selection in Statistical Machine Translation. 
-arXiv preprint arXiv:1612.05555. 2016.
+n Proceedings of EAMT, IN PRESS. 2017.
 ```
 
 
