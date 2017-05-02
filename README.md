@@ -68,7 +68,7 @@ If you use this code for any purpose, please cite the following paper:
 ```
 Peris Á., Chinea-Rios M., Casacuberta F. 
 Neural Networks Classifier for Data Selection in Statistical Machine Translation. 
-n Proceedings of EAMT, IN PRESS. 2017.
+In Proceedings of EAMT, IN PRESS. 2017.
 ```
 
 
