@@ -22,8 +22,8 @@ backend.
 Provided that you have [pip](https://en.wikipedia.org/wiki/Pip_(package_manager)) installed, run:
   
   ```bash
-  git clone https://github.com/lvapeab/nmt-keras
-  cd nmt-keras
+  git clone https://github.com/lvapeab/sentence-selectioNN
+  cd sentence-selectioNN
   pip install -r requirements.txt
   ```
  

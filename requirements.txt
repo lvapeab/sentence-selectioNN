@@ -1,13 +1,11 @@
-numpy
-six
-toolz
 cloud
+h5py
+-e git+https://github.com/MarcBS/keras.git#egg=keras
+-e git+https://github.com/MarcBS/multimodal_keras_wrapper.git#egg=keras_wrapper
 matplotlib
-scipy
-#cpickle
-cython
-
---allow-external keras
---allow-unverified keras
-git+https://github.com/MarcBS/keras#egg=keras
-
+numpy
+scikit-learn
+six
+tables
+Theano
+toolz
