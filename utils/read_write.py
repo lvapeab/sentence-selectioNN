@@ -9,55 +9,61 @@ Modified by: Marc Bola\~nos
 """
 
 import json
-import numpy as np
 import os
 import shutil
+
+import numpy as np
+
+
 ###
 # Helpers
 ###
 def _dirac(pred, gt):
-    return int(pred==gt)
+    return int(pred == gt)
+
 
 ###
 # Main functions
 ###
 def file2list(filepath):
-    with open(filepath,'r') as f:
-        lines =[k for k in 
-            [k.strip() for k in f.readlines()] 
-        if len(k) > 0]
+    with open(filepath, 'r') as f:
+        lines = [k for k in
+                 [k.strip() for k in f.readlines()]
+                 if len(k) > 0]
 
     return lines
+
 
 def numpy2file(filepath, mylist, permission='w'):
     mylist = np.asarray(mylist)
     with open(filepath, permission) as f:
         np.save(f, mylist)
 
-def listoflists2file(filepath,mylist,permission='w'):
+
+def listoflists2file(filepath, mylist, permission='w'):
     mylist = [str(sublist) for sublist in mylist]
     mylist = '\n'.join(str(mylist))
     if type(mylist[0]) is unicode:
-        mylist=mylist.encode('utf-8')
-    with open(filepath,permission) as f:
+        mylist = mylist.encode('utf-8')
+    with open(filepath, permission) as f:
         f.writelines(mylist)
 
-        
-def list2file(filepath,mylist,permission='w'):
-    mylist='\n'.join(str(mylist))
+
+def list2file(filepath, mylist, permission='w'):
+    mylist = '\n'.join(str(mylist))
     if type(mylist[0]) is unicode:
-        mylist=mylist.encode('utf-8')
-    with open(filepath,permission) as f:
+        mylist = mylist.encode('utf-8')
+    with open(filepath, permission) as f:
         f.writelines(mylist)
 
-        
-def list2vqa(filepath,mylist,qids,permission='w'):
+
+def list2vqa(filepath, mylist, qids, permission='w'):
     res = []
     for ans, qst in zip(mylist, qids):
         res.append({'answer': ans, 'question_id': int(qst)})
-    with open(filepath,permission) as f:
+    with open(filepath, permission) as f:
         json.dump(res, f)
-        
+
 
 def dump_hdf5_simple(filepath, dataset_name, data):
     import h5py
@@ -75,23 +81,23 @@ def load_hdf5_simple(filepath, dataset_name):
 
 
 def pickle_model(
-        path, 
-        model, 
+        path,
+        model,
         word2index_x,
         word2index_y,
         index2word_x,
         index2word_y):
     import sys
     import cPickle as pickle
-    modifier=10
+    modifier = 10
     tmp = sys.getrecursionlimit()
-    sys.setrecursionlimit(tmp*modifier)
+    sys.setrecursionlimit(tmp * modifier)
     with open(path, 'wb') as f:
-        p_dict = {'model':model,
-                'word2index_x':word2index_x,
-                'word2index_y':word2index_y,
-                'index2word_x':index2word_x,
-                'index2word_y':index2word_y}
+        p_dict = {'model': model,
+                  'word2index_x': word2index_x,
+                  'word2index_y': word2index_y,
+                  'index2word_x': index2word_x,
+                  'index2word_y': index2word_y}
         pickle.dump(p_dict, f, protocol=2)
     sys.setrecursionlimit(tmp)
 
@@ -167,7 +173,7 @@ def dict2file(mydict, path, title=None):
             useful if we write many dictionaries
             into the same file
     """
-    tmp = [str(x[0])+':'+str(x[1]) for x in mydict.items()]
+    tmp = [str(x[0]) + ':' + str(x[1]) for x in mydict.items()]
     if title is not None:
         output_list = [title]
         output_list.extend(tmp)
@@ -186,6 +192,7 @@ def create_dir_if_not_exists(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+
 def clean_dir(directory):
     """
     Creates (or empties) a directory
@@ -198,4 +205,3 @@ def clean_dir(directory):
         os.makedirs(directory)
     else:
         os.makedirs(directory)
-

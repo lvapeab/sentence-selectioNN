@@ -1,8 +1,8 @@
-from keras.layers.noise import GaussianNoise
 from keras.layers.advanced_activations import ChannelWisePReLU as PReLU
+from keras.layers.core import Dropout, Lambda
+from keras.layers.noise import GaussianNoise
 from keras.layers.normalization import BatchNormalization, L2_norm
 from keras.regularizers import l2
-from keras.layers.core import Dropout, Lambda
 
 
 def Regularize(layer, params, shared_layers=False, name=''):
@@ -15,13 +15,12 @@ def Regularize(layer, params, shared_layers=False, name=''):
     """
     shared_layers_list = []
 
-    if params.get('USE_NOISE') and  params['USE_NOISE']:
+    if params.get('USE_NOISE') and params['USE_NOISE']:
         if params.get('NOISE_AMOUNT'):
             shared_layers_list.append(GaussianNoise(params['NOISE_AMOUNT'], name=name + '_gaussian_noise'))
 
         else:
             shared_layers_list.append(GaussianNoise(0.01))
-
 
     if params.get('USE_BATCH_NORMALIZATION') and params['USE_BATCH_NORMALIZATION']:
         if params.get('WEIGHT_DECAY'):

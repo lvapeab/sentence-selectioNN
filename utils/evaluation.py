@@ -1,4 +1,4 @@
-#from vqaEval import VQAEval
+# from vqaEval import VQAEval
 
 # supported evaluators
 import json
@@ -6,18 +6,16 @@ import logging
 import os
 
 import numpy as np
-from sklearn import metrics as sklearn_metrics
-
 from pycocoevalcap.bleu.bleu import Bleu
-from pycocoevalcap.meteor.meteor import Meteor
 from pycocoevalcap.cider.cider import Cider
+from pycocoevalcap.meteor.meteor import Meteor
 from pycocoevalcap.rouge.rouge import Rouge
 from pycocoevalcap.vqa import vqaEval, visual_qa
+from sklearn import metrics as sklearn_metrics
+
 from read_write import list2vqa
-from pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
 
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
-
 
 
 def get_coco_score(pred_list, verbose, extra_vars, split):
@@ -33,12 +31,12 @@ def get_coco_score(pred_list, verbose, extra_vars, split):
     """
 
     gts = extra_vars[split]['references']
-    hypo = {idx: map(extra_vars['tokenize_f'],[lines.strip()]) for (idx, lines) in enumerate(pred_list)}
+    hypo = {idx: map(extra_vars['tokenize_f'], [lines.strip()]) for (idx, lines) in enumerate(pred_list)}
     refs = {idx: map(extra_vars['tokenize_f'], gts[idx]) for idx in gts.keys()}
 
     scorers = [
         (Bleu(4), ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4"]),
-        (Meteor(language=extra_vars['language']),"METEOR"),
+        (Meteor(language=extra_vars['language']), "METEOR"),
         (Rouge(), "ROUGE_L"),
         (Cider(), "CIDEr")
     ]
@@ -53,13 +51,12 @@ def get_coco_score(pred_list, verbose, extra_vars, split):
             final_scores[method] = score
 
     if verbose > 0:
-        logging.info('Computing coco scores on the %s split...' %(split))
+        logging.info('Computing coco scores on the %s split...' % (split))
         for metric in sorted(final_scores):
             value = final_scores[metric]
-            logging.info(metric +': ' + str(value))
+            logging.info(metric + ': ' + str(value))
 
     return final_scores
-
 
 
 def eval_vqa(gt_list, pred_list, verbose, extra_vars, split):
@@ -77,34 +74,34 @@ def eval_vqa(gt_list, pred_list, verbose, extra_vars, split):
     '''
     quesFile = extra_vars[split]['quesFile']
     annFile = extra_vars[split]['annFile']
-    
+
     # create temporal resFile
     resFile = 'tmp_res_file.json'
     list2vqa(resFile, pred_list, extra_vars[split]['question_ids'])
-    
+
     # create vqa object and vqaRes object
     vqa_ = visual_qa.VQA(annFile, quesFile)
     vqaRes = vqa_.loadRes(resFile, quesFile)
-    vqaEval_ = vqaEval.VQAEval(vqa_, vqaRes, n=2)   #n is precision of accuracy (number of places after decimal), default is 2
+    vqaEval_ = vqaEval.VQAEval(vqa_, vqaRes,
+                               n=2)  # n is precision of accuracy (number of places after decimal), default is 2
     vqaEval_.evaluate()
-    os.remove(resFile) # remove temporal file
-    
+    os.remove(resFile)  # remove temporal file
+
     # get results
     acc_overall = vqaEval_.accuracy['overall']
     acc_yes_no = vqaEval_.accuracy['perAnswerType']['yes/no']
     acc_number = vqaEval_.accuracy['perAnswerType']['number']
     acc_other = vqaEval_.accuracy['perAnswerType']['other']
-    #acc_per_class = vqaEval_.accuracy['perAnswerClass']
-    #acc_class_normalized = vqaEval_.accuracy['classNormalizedOverall']
+    # acc_per_class = vqaEval_.accuracy['perAnswerClass']
+    # acc_class_normalized = vqaEval_.accuracy['classNormalizedOverall']
 
     if verbose > 0:
-        logging.info('VQA Metric: Accuracy yes/no is {0}, other is {1}, number is {2}, overall is {3}'.\
-                format(acc_yes_no, acc_other, acc_number, acc_overall))#, acc_class_normalized))
+        logging.info('VQA Metric: Accuracy yes/no is {0}, other is {1}, number is {2}, overall is {3}'. \
+                     format(acc_yes_no, acc_other, acc_number, acc_overall))  # , acc_class_normalized))
     return {'overall accuracy': acc_overall,
             'yes/no accuracy': acc_yes_no,
             'number accuracy': acc_number,
             'other accuracy': acc_other}
-
 
 
 def eval_multiclass_metrics(gt_list, pred_list, verbose, extra_vars, split):
@@ -123,13 +120,13 @@ def eval_multiclass_metrics(gt_list, pred_list, verbose, extra_vars, split):
     word2idx = extra_vars[split]['word2idx']
     n_classes = len(word2idx)
     n_samples = len(pred_list)
-    
+
     # Create prediction matrix
     y_pred = np.zeros((n_samples, n_classes))
     for i_s, sample in enumerate(pred_list):
         for word in sample:
             y_pred[i_s, word2idx[word]] = 1
-    
+
     y_gt = np.array(gt_list)
 
     # Compute Coverage Error
@@ -140,13 +137,15 @@ def eval_multiclass_metrics(gt_list, pred_list, verbose, extra_vars, split):
     rankloss = sklearn_metrics.label_ranking_loss(y_gt, y_pred)
 
     if verbose > 0:
-        logging.info('Coverage Error (best: avg labels per sample = %f): %f' %(np.sum(y_gt)/float(n_samples), coverr))
+        logging.info(
+            'Coverage Error (best: avg labels per sample = %f): %f' % (np.sum(y_gt) / float(n_samples), coverr))
         logging.info('Label Ranking Average Precision (best: 1.0): %f' % avgprec)
         logging.info('Label Ranking Loss (best: 0.0): %f' % rankloss)
-    
+
     return {'coverage error': coverr,
             'average precision': avgprec,
             'ranking loss': rankloss}
+
 
 def multilabel_metrics(pred_list, verbose, extra_vars, split):
     '''
@@ -186,20 +185,20 @@ def multilabel_metrics(pred_list, verbose, extra_vars, split):
             'recall': recall,
             'f1': f1}
 
-        
+
 ########################################
 # EVALUATION FUNCTIONS SELECTOR
 ########################################
 
 # List of evaluation functions and their identifiers (will be used in params['METRICS'])
 select = {
-         'vqa': eval_vqa,                        # Metric for the VQA challenge
-         'coco': get_coco_score,                 # MS COCO evaluation library (BLEU, METEOR and CIDEr scores)
-         'multiclass': eval_multiclass_metrics,  # Set of multiclass classification metrics from sklearn
-         'multilabel_metrics': multilabel_metrics  # Set of multilabel classification metrics from sklearn
-         }
-                
-                
+    'vqa': eval_vqa,  # Metric for the VQA challenge
+    'coco': get_coco_score,  # MS COCO evaluation library (BLEU, METEOR and CIDEr scores)
+    'multiclass': eval_multiclass_metrics,  # Set of multiclass classification metrics from sklearn
+    'multilabel_metrics': multilabel_metrics  # Set of multilabel classification metrics from sklearn
+}
+
+
 ########################################
 # AUXILIARY FUNCTIONS
 ########################################
@@ -215,13 +214,13 @@ def vqa_store(question_id_list, answer_list, path):
     """
     question_answer_pairs = []
     assert len(question_id_list) == len(answer_list), \
-            'must be the same number of questions and answers'
-    for q,a in zip(question_id_list, answer_list):
-        question_answer_pairs.append({'question_id':q, 'answer':str(a)})
-    with open(path,'w') as f:
+        'must be the same number of questions and answers'
+    for q, a in zip(question_id_list, answer_list):
+        question_answer_pairs.append({'question_id': q, 'answer': str(a)})
+    with open(path, 'w') as f:
         json.dump(question_answer_pairs, f)
+
 
 def caption_store(samples, path):
     with open(path, 'w') as f:
-            print >>f, '\n'.join(samples)
-
+        print >> f, '\n'.join(samples)

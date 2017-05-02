@@ -14,17 +14,17 @@ from keras.callbacks import Callback as KerasCallback
 
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
 
+
 ###
 # Printing callbacks
 ###
 
 class PrintPerformanceMetricOnEpochEnd(KerasCallback):
-
     def __init__(self, model, dataset, gt_id, metric_name, set_name, batch_size, each_n_epochs=1, extra_vars=dict(),
                  is_text=False, index2word_y=None, sampling='max_likelihood', beam_search=False,
-                 write_samples = False, save_path='logs/performance.', reload_epoch=0,
+                 write_samples=False, save_path='logs/performance.', reload_epoch=0,
                  start_eval_on_epoch=0, write_type='list', sampling_type='max_likelihood',
-                 out_pred_idx=None, early_stop=False, patience=5, stop_metric = 'Bleu-4', verbose=1):
+                 out_pred_idx=None, early_stop=False, patience=5, stop_metric='Bleu-4', verbose=1):
         """
             :param model: model to evaluate
             :param dataset: instance of the class Dataset in keras_wrapper.dataset
@@ -73,21 +73,21 @@ class PrintPerformanceMetricOnEpochEnd(KerasCallback):
         self.verbose = verbose
 
     def on_epoch_end(self, epoch, logs={}):
-        epoch += 1 # start by index 1
+        epoch += 1  # start by index 1
         epoch += self.reload_epoch
         if epoch < self.start_eval_on_epoch:
             if self.verbose > 0:
-                logging.info('Not evaluating until end of epoch '+ str(self.start_eval_on_epoch))
+                logging.info('Not evaluating until end of epoch ' + str(self.start_eval_on_epoch))
             return
-        elif (epoch-self.start_eval_on_epoch) % self.each_n_epochs != 0:
+        elif (epoch - self.start_eval_on_epoch) % self.each_n_epochs != 0:
             if self.verbose > 0:
-                logging.info('Evaluating only every '+ str(self.each_n_epochs) + ' epochs')
+                logging.info('Evaluating only every ' + str(self.each_n_epochs) + ' epochs')
             return
-        
+
         # Evaluate on each set separately
         for s in self.set_name:
             # Apply model predictions
-            params_prediction = {'batch_size': self.batch_size, 
+            params_prediction = {'batch_size': self.batch_size,
                                  'n_parallel_loaders': self.extra_vars['n_parallel_loaders'],
                                  'predict_on_sets': [s]}
 
@@ -101,32 +101,32 @@ class PrintPerformanceMetricOnEpochEnd(KerasCallback):
                 if self.extra_vars.get('model_outputs'):
                     params_prediction['model_outputs'] = self.extra_vars['model_outputs']
                 if self.extra_vars.get('dataset_inputs'):
-                    params_prediction['dataset_inputs'] =  self.extra_vars['dataset_inputs']
+                    params_prediction['dataset_inputs'] = self.extra_vars['dataset_inputs']
                 if self.extra_vars.get('dataset_outputs'):
-                    params_prediction['dataset_outputs'] =  self.extra_vars['dataset_outputs']
+                    params_prediction['dataset_outputs'] = self.extra_vars['dataset_outputs']
                 if self.extra_vars.get('normalize'):
-                    params_prediction['normalize'] =  self.extra_vars['normalize']
+                    params_prediction['normalize'] = self.extra_vars['normalize']
                 if self.extra_vars.get('alpha_factor'):
-                    params_prediction['alpha_factor'] =  self.extra_vars['alpha_factor']
+                    params_prediction['alpha_factor'] = self.extra_vars['alpha_factor']
                 if self.extra_vars.get('words_so_far'):
                     params_prediction['words_so_far'] = self.extra_vars['words_so_far']
                 predictions = self.model_to_eval.BeamSearchNet(self.ds, params_prediction)[s]
             else:
                 predictions = self.model_to_eval.predictNet(self.ds, params_prediction)[s]
 
-            if(self.is_text):
+            if (self.is_text):
                 if self.out_pred_idx is not None:
                     predictions = predictions[self.out_pred_idx]
                 # Convert predictions into sentences
                 if self.beam_search:
                     predictions = self.model_to_eval.decode_predictions_beam_search(predictions,
-                                                      self.index2word_y, 
-                                                      verbose=self.verbose)
+                                                                                    self.index2word_y,
+                                                                                    verbose=self.verbose)
                 else:
-                    predictions = self.model_to_eval.decode_predictions(predictions, 1, # always set temperature to 1
-                                                      self.index2word_y,
-                                                      self.sampling_type,
-                                                      verbose=self.verbose)
+                    predictions = self.model_to_eval.decode_predictions(predictions, 1,  # always set temperature to 1
+                                                                        self.index2word_y,
+                                                                        self.sampling_type,
+                                                                        verbose=self.verbose)
             # Store predictions
             if self.write_samples:
                 if self.write_type == 'numpy':
@@ -134,7 +134,7 @@ class PrintPerformanceMetricOnEpochEnd(KerasCallback):
                 else:
                     extension = '.pred'
                 # Store result
-                filepath = self.save_path +'/'+ s +'_update_'+ str(epoch) + extension # results file
+                filepath = self.save_path + '/' + s + '_update_' + str(epoch) + extension  # results file
                 if self.write_type == 'list':
                     list2file(filepath, predictions)
                 elif self.write_type == 'vqa':
@@ -144,34 +144,34 @@ class PrintPerformanceMetricOnEpochEnd(KerasCallback):
                 elif self.write_type == 'numpy':
                     numpy2file(filepath, predictions)
                 else:
-                    raise NotImplementedError('The store type "'+self.write_type+'" is not implemented.')
+                    raise NotImplementedError('The store type "' + self.write_type + '" is not implemented.')
 
             # Evaluate on each metric
             for metric in self.metric_name:
                 if self.verbose > 0:
-                    logging.info('Evaluating on metric '+metric)
-                filepath = self.save_path +'/'+ s +'.'+metric # results file
+                    logging.info('Evaluating on metric ' + metric)
+                filepath = self.save_path + '/' + s + '.' + metric  # results file
 
                 # Evaluate on the chosen metric
                 metrics = evaluation.select[metric](
-                            pred_list=predictions,
-                            verbose=self.verbose,
-                            extra_vars=self.extra_vars,
-                            split=s)
+                    pred_list=predictions,
+                    verbose=self.verbose,
+                    extra_vars=self.extra_vars,
+                    split=s)
 
                 # Print results to file
                 with open(filepath, 'a') as f:
                     header = 'epoch,'
-                    line = str(epoch)+','
+                    line = str(epoch) + ','
                     for metric_ in sorted(metrics):
                         value = metrics[metric_]
-                        header += metric_ +','
-                        line += str(value)+','
-                    if(epoch==1 or epoch==self.start_eval_on_epoch):
-                        f.write(header+'\n')
-                    f.write(line+'\n')
+                        header += metric_ + ','
+                        line += str(value) + ','
+                    if (epoch == 1 or epoch == self.start_eval_on_epoch):
+                        f.write(header + '\n')
+                    f.write(line + '\n')
                 if self.verbose > 0:
-                    logging.info('Done evaluating on metric '+metric)
+                    logging.info('Done evaluating on metric ' + metric)
 
             # Early stop check
             if self.early_stop and s in ['val', 'validation', 'dev', 'development']:
@@ -192,13 +192,13 @@ class PrintPerformanceMetricOnEpochEnd(KerasCallback):
                     if self.verbose > 0:
                         logging.info('----bad counter: %d/%d' % (self.wait, self.patience))
 
-class PrintPerformanceMetricEachNUpdates(KerasCallback):
 
+class PrintPerformanceMetricEachNUpdates(KerasCallback):
     def __init__(self, model, dataset, gt_id, metric_name, set_name, batch_size, extra_vars=dict(),
                  is_text=False, index2word_y=None, sampling='max_likelihood', beam_search=False,
-                 write_samples = False, save_path='logs/performance.', reload_epoch=0,
+                 write_samples=False, save_path='logs/performance.', reload_epoch=0,
                  each_n_updates=10000, start_eval_on_epoch=0, write_type='list', sampling_type='max_likelihood',
-                 out_pred_idx=None, early_stop=False, patience=5, stop_metric = 'Bleu-4', verbose=1):
+                 out_pred_idx=None, early_stop=False, patience=5, stop_metric='Bleu-4', verbose=1):
         """
             :param model: model to evaluate
             :param dataset: instance of the class Dataset in keras_wrapper.dataset
@@ -252,7 +252,7 @@ class PrintPerformanceMetricEachNUpdates(KerasCallback):
         self.epoch += 1
 
     def on_batch_end(self, n_update, logs={}):
-        self.cum_update += 1 # start by index 1
+        self.cum_update += 1  # start by index 1
         if self.cum_update % self.each_n_updates != 0:
             return
         if self.epoch < self.start_eval_on_epoch:
@@ -274,13 +274,13 @@ class PrintPerformanceMetricEachNUpdates(KerasCallback):
                 if self.extra_vars.get('model_outputs'):
                     params_prediction['model_outputs'] = self.extra_vars['model_outputs']
                 if self.extra_vars.get('dataset_inputs'):
-                    params_prediction['dataset_inputs'] =  self.extra_vars['dataset_inputs']
+                    params_prediction['dataset_inputs'] = self.extra_vars['dataset_inputs']
                 if self.extra_vars.get('dataset_outputs'):
-                    params_prediction['dataset_outputs'] =  self.extra_vars['dataset_outputs']
+                    params_prediction['dataset_outputs'] = self.extra_vars['dataset_outputs']
                 if self.extra_vars.get('normalize'):
-                    params_prediction['normalize'] =  self.extra_vars['normalize']
+                    params_prediction['normalize'] = self.extra_vars['normalize']
                 if self.extra_vars.get('alpha_factor'):
-                    params_prediction['alpha_factor'] =  self.extra_vars['alpha_factor']
+                    params_prediction['alpha_factor'] = self.extra_vars['alpha_factor']
                 if self.extra_vars.get('words_so_far'):
                     params_prediction['words_so_far'] = self.extra_vars['words_so_far']
 
@@ -288,19 +288,19 @@ class PrintPerformanceMetricEachNUpdates(KerasCallback):
             else:
                 predictions = self.model_to_eval.predictNet(self.ds, params_prediction)[s]
 
-            if(self.is_text):
+            if (self.is_text):
                 if self.out_pred_idx is not None:
                     predictions = predictions[self.out_pred_idx]
                 # Convert predictions into sentences
                 if self.beam_search:
                     predictions = self.model_to_eval.decode_predictions_beam_search(predictions,
-                                                      self.index2word_y,
-                                                      verbose=self.verbose)
+                                                                                    self.index2word_y,
+                                                                                    verbose=self.verbose)
                 else:
-                    predictions = self.model_to_eval.decode_predictions(predictions, 1, # always set temperature to 1
-                                                      self.index2word_y,
-                                                      self.sampling_type,
-                                                      verbose=self.verbose)
+                    predictions = self.model_to_eval.decode_predictions(predictions, 1,  # always set temperature to 1
+                                                                        self.index2word_y,
+                                                                        self.sampling_type,
+                                                                        verbose=self.verbose)
 
             # Store predictions
             if self.write_samples:
@@ -309,7 +309,7 @@ class PrintPerformanceMetricEachNUpdates(KerasCallback):
                 else:
                     extension = '.pred'
                 # Store result
-                filepath = self.save_path +'/'+ s +'_update_'+ str(self.cum_update) + extension # results file
+                filepath = self.save_path + '/' + s + '_update_' + str(self.cum_update) + extension  # results file
                 if self.write_type == 'list':
                     list2file(filepath, predictions)
                 elif self.write_type == 'vqa':
@@ -319,34 +319,34 @@ class PrintPerformanceMetricEachNUpdates(KerasCallback):
                 elif self.write_type == 'numpy':
                     numpy2file(filepath, predictions)
                 else:
-                    raise NotImplementedError('The store type "'+self.write_type+'" is not implemented.')
+                    raise NotImplementedError('The store type "' + self.write_type + '" is not implemented.')
 
             # Evaluate on each metric
             for metric in self.metric_name:
                 if self.verbose > 0:
-                    logging.info('Evaluating on metric '+metric)
-                filepath = self.save_path +'/'+ s +'.'+metric # results file
+                    logging.info('Evaluating on metric ' + metric)
+                filepath = self.save_path + '/' + s + '.' + metric  # results file
 
                 # Evaluate on the chosen metric
                 metrics = evaluation.select[metric](
-                            pred_list=predictions,
-                            verbose=self.verbose,
-                            extra_vars=self.extra_vars,
-                            split=s)
+                    pred_list=predictions,
+                    verbose=self.verbose,
+                    extra_vars=self.extra_vars,
+                    split=s)
 
                 # Print results to file
                 with open(filepath, 'a') as f:
                     header = 'Update,'
-                    line = str(self.cum_update)+','
+                    line = str(self.cum_update) + ','
                     for metric_ in sorted(metrics):
                         value = metrics[metric_]
-                        header += metric_ +','
-                        line += str(value)+','
-                    if(self.cum_update==0 or self.cum_update==self.each_n_updates):
-                        f.write(header+'\n')
-                    f.write(line+'\n')
+                        header += metric_ + ','
+                        line += str(value) + ','
+                    if (self.cum_update == 0 or self.cum_update == self.each_n_updates):
+                        f.write(header + '\n')
+                    f.write(line + '\n')
                 if self.verbose > 0:
-                    logging.info('Done evaluating on metric '+metric)
+                    logging.info('Done evaluating on metric ' + metric)
 
             # Early stop check
             if self.early_stop and s in ['val', 'validation', 'dev', 'development']:
@@ -369,7 +369,6 @@ class PrintPerformanceMetricEachNUpdates(KerasCallback):
 
 
 class SampleEachNUpdates(KerasCallback):
-
     def __init__(self, model, dataset, gt_id, set_name, n_samples, each_n_updates=10000, extra_vars=dict(),
                  is_text=False, index2word_y=None, sampling='max_likelihood', beam_search=False,
                  reload_epoch=0, start_sampling_on_epoch=0, write_type='list', sampling_type='max_likelihood',
@@ -410,7 +409,7 @@ class SampleEachNUpdates(KerasCallback):
         self.verbose = verbose
 
     def on_batch_end(self, n_update, logs={}):
-        n_update += 1 # start by index 1
+        n_update += 1  # start by index 1
         n_update += self.reload_epoch
         if n_update < self.start_sampling_on_epoch:
             return
@@ -436,42 +435,41 @@ class SampleEachNUpdates(KerasCallback):
                 if self.extra_vars.get('model_outputs'):
                     params_prediction['model_outputs'] = self.extra_vars['model_outputs']
                 if self.extra_vars.get('dataset_inputs'):
-                    params_prediction['dataset_inputs'] =  self.extra_vars['dataset_inputs']
+                    params_prediction['dataset_inputs'] = self.extra_vars['dataset_inputs']
                 if self.extra_vars.get('dataset_outputs'):
-                    params_prediction['dataset_outputs'] =  self.extra_vars['dataset_outputs']
+                    params_prediction['dataset_outputs'] = self.extra_vars['dataset_outputs']
                 if self.extra_vars.get('normalize'):
-                    params_prediction['normalize'] =  self.extra_vars['normalize']
+                    params_prediction['normalize'] = self.extra_vars['normalize']
                 if self.extra_vars.get('alpha_factor'):
-                    params_prediction['alpha_factor'] =  self.extra_vars['alpha_factor']
+                    params_prediction['alpha_factor'] = self.extra_vars['alpha_factor']
                 if self.extra_vars.get('words_so_far'):
                     params_prediction['words_so_far'] = self.extra_vars['words_so_far']
 
                 predictions, truths = self.model_to_eval.BeamSearchNet(self.ds, params_prediction)
             else:
                 predictions, truths = self.model_to_eval.predictNet(self.ds, params_prediction)[s]
-            gt_y = eval('self.ds.Y_'+s+'["'+self.gt_id+'"]')
+            gt_y = eval('self.ds.Y_' + s + '["' + self.gt_id + '"]')
             predictions = predictions[s]
-            if(self.is_text):
+            if (self.is_text):
                 if self.out_pred_idx is not None:
                     predictions = predictions[self.out_pred_idx]
                 # Convert predictions into sentences
                 if self.beam_search:
                     predictions = self.model_to_eval.decode_predictions_beam_search(predictions,
-                                                      self.index2word_y,
-                                                      verbose=self.verbose)
+                                                                                    self.index2word_y,
+                                                                                    verbose=self.verbose)
                 else:
-                    predictions = self.model_to_eval.decode_predictions(predictions, 1, # always set temperature to 1
-                                                      self.index2word_y,
-                                                      self.sampling_type,
-                                                      verbose=self.verbose)
+                    predictions = self.model_to_eval.decode_predictions(predictions, 1,  # always set temperature to 1
+                                                                        self.index2word_y,
+                                                                        self.sampling_type,
+                                                                        verbose=self.verbose)
                 truths = self.model_to_eval.decode_predictions_one_hot(truths,
-                                                      self.index2word_y,
-                                                      verbose=self.verbose)
+                                                                       self.index2word_y,
+                                                                       verbose=self.verbose)
             # Write samples
             for i, (sample, truth) in enumerate(zip(predictions, truths)):
-                print ("Hypothesis (%d): %s"%(i, sample))
-                print ("Reference  (%d): %s"%(i, truth))
-
+                print("Hypothesis (%d): %s" % (i, sample))
+                print("Reference  (%d): %s" % (i, truth))
 
 
 class ReduceLearningRate(KerasCallback):
@@ -480,6 +478,7 @@ class ReduceLearningRate(KerasCallback):
 
     Original work: jiumem [https://github.com/jiumem]
     """
+
     def __init__(self, patience=0, reduce_nb=10, is_early_stopping=True, verbose=1):
         """
         In:
@@ -505,7 +504,7 @@ class ReduceLearningRate(KerasCallback):
         current_score = logs.get('val_acc')
         if current_score is None:
             warnings.warn('validation score is off; ' +
-                    'this reducer works only with the validation score on')
+                          'this reducer works only with the validation score on')
             return
         if current_score > self.best_score:
             self.best_score = current_score

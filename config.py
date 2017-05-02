@@ -6,12 +6,14 @@ def load_parameters():
 
     # Input data params
     DATASET_NAME = 'cnn_polarity'
-    FILL = 'end'                                  # whether we fill the 'end' or the 'start' of the sentence with 0s
+
     SRC_LAN = 'de'                                # Input language
     TRG_LAN = 'en'                                # Outputs language
     MODE = 'semisupervised-selection'             # 'training', 'sampling', 'semisupervised-selection'
 
     BINARY_SELECTION = True                       # Binary classification problem (currently, 'semisupervised-selection' only supports BINARY_SELECTION)
+    BILINGUAL_SELECTION = True                    # Use source and target text for classification
+
     # Path to data
     ROOT_PATH = '/media/HDD_2TB/DATASETS/%s/' % DATASET_NAME             # Root path to the data folder
     DATA_ROOT_PATH = ROOT_PATH + 'DATA/Emea-Euro/De-En'                  # Path to the corpora folder
@@ -20,19 +22,20 @@ def load_parameters():
     INSTANCES_TO_ADD = 50000                                             # 'r' parameter. Number of sentences added at each iteration
 
     if BINARY_SELECTION:
-        POSITIVE_FILENAME = 'EMEA.de-en.Sin-repetidas'                   # In-domain corpus (I)
+        POSITIVE_FILENAME = 'EMEA.de-en.clean'                           # In-domain corpus (I)
         NEGATIVE_FILENAME = 'dev'                                        # Initial negative corpus (N_0)
         if 'semisupervised' in MODE:
             POOL_FILENAME = 'training'                                   # Initial pool of out-of-domain sentences (G_0)
 
     # Fill these dictionaries for a regular sentence classification task
-    TEXT_FILES = {}   #{'train': 'train.' + SRC_LAN, 'val': 'val.' + SRC_LAN}
-    CLASS_FILES = {}  #{'train': 'train.' + SRC_LAN.class, 'val': 'val.' + SRC_LAN.class}
+    TEXT_FILES =  {}#{'train': 'training.' + SRC_LAN, 'val': 'val.' + SRC_LAN}
+    CLASS_FILES = {}#{'train': 'training.class', 'val': 'val.class'}
 
     # Dataset parameters
-    INPUTS_IDS_DATASET = ['input_text']           # Corresponding inputs of the dataset
+
+    INPUTS_IDS_DATASET = ['source_text', 'target_text'] if BILINGUAL_SELECTION else ['source_text'] # Corresponding inputs of the dataset
     OUTPUTS_IDS_DATASET = ['class']               # Corresponding outputs of the dataset
-    INPUTS_IDS_MODEL = ['input_text']             # Corresponding inputs of the built model
+    INPUTS_IDS_MODEL = ['source_text', 'target_text'] if BILINGUAL_SELECTION else ['source_text']  # Corresponding inputs of the built model
     OUTPUTS_IDS_MODEL = ['class']                 # Corresponding outputs of the built model
 
     # Evaluation params
@@ -54,7 +57,7 @@ def load_parameters():
     # Input text parameters
     VOCABULARY_SIZE = 0                          # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
     MIN_OCCURRENCES_VOCAB = 0                    # Minimum number of occurrences allowed for the words in the vocabulay. Set to 0 for using them all.
-    MAX_INPUT_TEXT_LEN = 50                      # Maximum length of the input sequence
+    MAX_INPUT_TEXT_LEN = 40                      # Maximum length of the input sequence
 
     # Input text parameters
     INPUT_VOCABULARY_SIZE = 0                    # Size of the input vocabulary. Set to 0 for using all, otherwise will be truncated to these most frequent words.
@@ -74,26 +77,32 @@ def load_parameters():
 
     # Training parameters
     MAX_EPOCH =  10                              # Stop when computed this number of epochs
-    BATCH_SIZE = 768                             # Training batch size
+    BATCH_SIZE = 512                             # Training batch size
     N_ITER = 15                                  # Iterations to perform of the semisupervised selection
 
     HOMOGENEOUS_BATCHES = False                  # Use batches with homogeneous output lengths for every minibatch (Dangerous!)
     PARALLEL_LOADERS = 8                         # Parallel data batch loaders
     EPOCHS_FOR_SAVE = 1                          # Number of epochs between model saves
     WRITE_VALID_SAMPLES = True                   # Write valid samples in file
+    DATA_AUGMENTATION = False                    # Apply data augmentation on input data (still unimplemented for text inputs)
 
 
     # Model parameters
     MODEL_TYPE = 'BLSTM_Classifier'              # Model type. See model_zoo.py
     CLASSIFIER_ACTIVATION = 'softmax'            # Last layer activation
     PAD_ON_BATCH = 'CNN' not in MODEL_TYPE       # Padded batches
+    FILL = 'end' if 'CNN' not in MODEL_TYPE else 'center'  # whether we fill the 'end', 'center' or start' of the sentence with 0s
+
     N_CLASSES = 2                                # Number of classes
-    DATA_AUGMENTATION = False                    # Apply data augmentation on input data (still unimplemented for text inputs)
 
     # Word embedding parameters
-    GLOVE_VECTORS = '/media/HDD_2TB/DATASETS/cnn_polarity/DATA/word2vec.%s.npy' % SRC_LAN   # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
-    GLOVE_VECTORS_TRAINABLE = True                                                          # Finetune or not the word embedding vectors.
-    TEXT_EMBEDDING_HIDDEN_SIZE = 300                                                        # When using pretrained word embeddings, this parameter must match with the word embeddings size
+    SRC_PRETRAINED_VECTORS = '/media/HDD_2TB/DATASETS/cnn_polarity/DATA/word2vec.%s.npy' % SRC_LAN   # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
+    SRC_PRETRAINED_VECTORS_TRAINABLE = True                                                          # Finetune or not the word embedding vectors.
+    TRG_PRETRAINED_VECTORS = '/media/HDD_2TB/DATASETS/cnn_polarity/DATA/word2vec.%s.npy' % TRG_LAN   # Path to pretrained vectors. Set to None if you don't want to use pretrained vectors.
+    TRG_PRETRAINED_VECTORS_TRAINABLE = True                                                          # Finetune or not the word embedding vectors.
+    SRC_TEXT_EMBEDDING_HIDDEN_SIZE = 300                                                        # When using pretrained word embeddings, this parameter must match with the word embeddings size
+    TRG_TEXT_EMBEDDING_HIDDEN_SIZE = 300                                                        # When using pretrained word embeddings, this parameter must match with the word embeddings size
+
 
     # LSTM layers dimensions (Only used if needed)
     LSTM_ENCODER_HIDDEN_SIZE = 300  # For models with LSTM encoder
@@ -136,7 +145,7 @@ def load_parameters():
 
     # Results plot and models storing parameters
     EXTRA_NAME = ''  # This will be appended to the end of the model name
-    MODEL_NAME = DATASET_NAME + '_' + MODEL_TYPE + '_txtemb_' + str(TEXT_EMBEDDING_HIDDEN_SIZE) + \
+    MODEL_NAME = DATASET_NAME + '_' + MODEL_TYPE + '_txtemb_' + str(SRC_TEXT_EMBEDDING_HIDDEN_SIZE) + \
                  '_addemb_' + '_'.join([layer[0] for layer in ADDITIONAL_EMBEDDING_LAYERS]) + \
                  '_' + str(LSTM_ENCODER_HIDDEN_SIZE) + \
                  '_deepout_' + '_'.join([layer[0] for layer in DEEP_OUTPUT_LAYERS]) + \
