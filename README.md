@@ -7,7 +7,7 @@ backend.
 
 ## Features
 
-* Neural network-based sentence classifiers.
+* Neural network-based sentence classifiers, either at monolingual and bilingual level.
 
 * BLSTMs / CNNs classifiers. Easy to extend. 
 
