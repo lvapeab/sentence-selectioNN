@@ -5,8 +5,8 @@ from shutil import copyfile
 from timeit import default_timer as timer
 
 from keras_wrapper.cnn_model import loadModel
-
-import utils
+from keras_wrapper.extra import evaluation, read_write
+from keras_wrapper.extra.callbacks import PrintPerformanceMetricOnEpochEndOrEachNUpdates
 from config import load_parameters
 from data_engine.prepare_data import build_dataset
 from model_zoo import Text_Classification_Model
@@ -123,7 +123,7 @@ def apply_Clas_model(params):
         # Store result
         filepath = text_class_model.model_path + '/' + s + '.pred'  # results file
         if params['SAMPLING_SAVE_MODE'] == 'list':
-            utils.read_write.list2file(filepath, predictions)
+            read_write.list2file(filepath, predictions)
         else:
             raise Exception, 'Only "list" is allowed in "SAMPLING_SAVE_MODE"'
 
@@ -135,7 +135,7 @@ def apply_Clas_model(params):
             # Evaluate on the chosen metric
             extra_vars[s] = dict()
             extra_vars[s]['references'] = dataset.extra_variables[s][params['OUTPUTS_IDS_DATASET'][0]]
-            metrics = utils.evaluation.select[metric](
+            metrics = evaluation.select[metric](
                 pred_list=predictions,
                 verbose=1,
                 extra_vars=extra_vars,
@@ -341,42 +341,22 @@ def buildCallbacks(params, model, dataset):
                 extra_vars['n_classes'] = len(dataset.dic_classes[params['OUTPUTS_IDS_DATASET'][0]])
 
         if params['EVAL_EACH_EPOCHS']:
-            callback_metric = utils.callbacks.PrintPerformanceMetricOnEpochEnd(model, dataset,
-                                                                               gt_id=params['OUTPUTS_IDS_DATASET'][0],
-                                                                               metric_name=params['METRICS'],
-                                                                               set_name=params['EVAL_ON_SETS'],
-                                                                               batch_size=params['BATCH_SIZE'],
-                                                                               each_n_epochs=params['EVAL_EACH'],
-                                                                               extra_vars=extra_vars,
-                                                                               reload_epoch=params['RELOAD'],
-                                                                               save_path=model.model_path,
-                                                                               start_eval_on_epoch=params[
-                                                                                   'START_EVAL_ON_EPOCH'],
-                                                                               write_samples=True,
-                                                                               write_type=params['SAMPLING_SAVE_MODE'],
-                                                                               early_stop=params['EARLY_STOP'],
-                                                                               patience=params['PATIENCE'],
-                                                                               stop_metric=params['STOP_METRIC'],
-                                                                               verbose=params['VERBOSE'])
-        else:
-            callback_metric = utils.callbacks.PrintPerformanceMetricEachNUpdates(model, dataset,
-                                                                                 gt_id=params['OUTPUTS_IDS_DATASET'][0],
-                                                                                 metric_name=params['METRICS'],
-                                                                                 set_name=params['EVAL_ON_SETS'],
-                                                                                 batch_size=params['BATCH_SIZE'],
-                                                                                 each_n_updates=params['EVAL_EACH'],
-                                                                                 extra_vars=extra_vars,
-                                                                                 reload_epoch=params['RELOAD'],
-                                                                                 save_path=model.model_path,
-                                                                                 start_eval_on_epoch=params[
-                                                                                     'START_EVAL_ON_EPOCH'],
-                                                                                 write_samples=True,
-                                                                                 write_type=params[
-                                                                                     'SAMPLING_SAVE_MODE'],
-                                                                                 early_stop=params['EARLY_STOP'],
-                                                                                 patience=params['PATIENCE'],
-                                                                                 stop_metric=params['STOP_METRIC'],
-                                                                                 verbose=params['VERBOSE'])
+            callback_metric = PrintPerformanceMetricOnEpochEndOrEachNUpdates(model,
+                                                                             dataset,
+                                                                             gt_id=params['OUTPUTS_IDS_DATASET'][0],
+                                                                             metric_name=params['METRICS'],
+                                                                             set_name=params['EVAL_ON_SETS'],
+                                                                             batch_size=params['BATCH_SIZE'],
+                                                                             each_n_epochs=params['EVAL_EACH'],
+                                                                             extra_vars=extra_vars,
+                                                                             reload_epoch=params['RELOAD'],
+                                                                             save_path=model.model_path,
+                                                                             start_eval_on_epoch=params[
+                                                                                 'START_EVAL_ON_EPOCH'],
+                                                                             write_samples=True,
+                                                                             write_type=params['SAMPLING_SAVE_MODE'],
+                                                                             verbose=params['VERBOSE'])
+
         callbacks.append(callback_metric)
 
     return callbacks
@@ -401,7 +381,7 @@ if __name__ == "__main__":
     except:
         print 'Overwritten arguments must have the form key=Value'
         exit(1)
-    utils.read_write.clean_dir(params['DEST_ROOT_PATH'])
+    read_write.clean_dir(params['DEST_ROOT_PATH'])
     if params['MODE'] == 'training':
         logging.info('Running training.')
         train_model(params)

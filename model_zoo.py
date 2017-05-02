@@ -8,7 +8,7 @@ from keras.models import model_from_json, Model
 from keras.optimizers import Adam, RMSprop, Nadam, Adadelta
 from keras.regularizers import l2
 from keras_wrapper.cnn_model import CNN_Model
-from utils.regularize import Regularize
+from keras_wrapper.extra.regularize import Regularize
 
 
 class Text_Classification_Model(CNN_Model):
