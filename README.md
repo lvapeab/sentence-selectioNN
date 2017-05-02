@@ -16,12 +16,23 @@ backend.
 
 * Iterative semi-supervised selection from top/bottom scoring sentences from an out-of-domain corpus. 
 
+
 ## Installation
 
+Provided that you have [pip](https://en.wikipedia.org/wiki/Pip_(package_manager)) installed, run:
+  
+  ```bash
+  git clone https://github.com/lvapeab/nmt-keras
+  cd nmt-keras
+  pip install -r requirements.txt
+  ```
+ 
+ for obtaining the required packages for running this library.
+ 
 `sentence-selectioNN` requires the following libraries:
 
  - [Our version of Keras](https://github.com/MarcBS/keras) 
- - [Staged Keras Wrapper](https://github.com/MarcBS/staged_keras_wrapper) 
+ - [Multimodal Keras Wrapper](https://github.com/lvapeab/multimodal_keras_wrapper) 
 
 ## Instructions:
 
