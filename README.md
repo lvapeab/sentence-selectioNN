@@ -1,8 +1,8 @@
 # Neural Networks for Data Selection 
  
-This repository contains the code for the paper "[Neural Networks Classifier for Data Selection in Statistical Machine Translation](http://arxiv.org/abs/1612.05555)"
+This repository contains the code for the paper "[Neural Networks Classifier for Data Selection in Statistical Machine Translation](https://www.degruyter.com/downloadpdf/j/pralin.2017.108.issue-1/pralin-2017-0027/pralin-2017-0027.pdf)"
  
-Built upon our fork of [Keras](https://github.com/MarcBS/keras) and tested for the [Theano](http://deeplearning.net/software/theano)
+Built upon our fork of [Keras](https://github.com/MarcBS/keras) ([version 1.2](https://github.com/MarcBS/keras/tree/Keras-1.2-(stable))) and tested for the [Theano](http://deeplearning.net/software/theano)
 backend.
 
 ## Features
@@ -58,7 +58,7 @@ We support two different network architecture, BLSTM or CNN, both at monolingual
 
 
 
-Please, see [the paper](http://arxiv.org/abs/1612.05555) for a more detailed description of the model.
+Please, see [the paper](https://www.degruyter.com/downloadpdf/j/pralin.2017.108.issue-1/pralin-2017-0027/pralin-2017-0027.pdf) for a more detailed description of the model.
 
 
 ## Citation
@@ -68,7 +68,7 @@ If you use this code for any purpose, please cite the following paper:
 ```
 Peris Á., Chinea-Rios M., Casacuberta F. 
 Neural Networks Classifier for Data Selection in Statistical Machine Translation. 
-n Proceedings of EAMT, IN PRESS. 2017.
+In  The Prague Bulletin of Mathematical Linguistics No. 108, pp. 283–294. 2017.
 ```
 
 
