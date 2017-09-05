@@ -1,10 +1,8 @@
 import numpy as np
 
 
-def process_prediction_probs(prediction_probs, n_intances_to_add, pool_src, pool_trg):
-    probs = np.array([], dtype="float32")
-    for batch in prediction_probs:
-        probs = np.append(probs, batch)
+def process_prediction_probs(prediction_probs, n_intances_to_add, pool_src, pool_trg, verbose=0):
+    probs = np.array(prediction_probs, dtype="float32")
     probs = probs.reshape(-1, 2)
     top_positive_positions = probs.argsort(axis=0)[:, 0][:n_intances_to_add]
     top_negative_positions = probs.argsort(axis=0)[:, 1][:n_intances_to_add]
@@ -19,6 +17,9 @@ def process_prediction_probs(prediction_probs, n_intances_to_add, pool_src, pool
     pool_file_trg = open(pool_trg)
 
     for i, (line_src, line_trg) in enumerate(zip(pool_file_src, pool_file_trg)):
+        if verbose:
+            if i % 1000 == 0:
+                print "Classified %d sentences \r" % i,
         if i in top_negative_positions:
             negative_lines_src.append(line_src)
             negative_lines_trg.append(line_trg)

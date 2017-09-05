@@ -4,11 +4,11 @@ import sys
 from shutil import copyfile
 from timeit import default_timer as timer
 
+from config import load_parameters
+from data_engine.prepare_data import build_dataset
 from keras_wrapper.cnn_model import loadModel
 from keras_wrapper.extra import evaluation, read_write
 from keras_wrapper.extra.callbacks import PrintPerformanceMetricOnEpochEndOrEachNUpdates
-from config import load_parameters
-from data_engine.prepare_data import build_dataset
 from model_zoo import Text_Classification_Model
 from utils.semisupervised_selection import process_prediction_probs, update_config_params, \
     process_files_binary_classification
@@ -174,7 +174,6 @@ def semisupervised_selection(params):
     pool_filename = params['DATA_ROOT_PATH'] + '/' + initial_pool_filename
 
     for i in range(params['N_ITER']):
-
         print "------------------ Starting iteration", i, "------------------"
         new_pos_filename = params['DEST_ROOT_PATH'] + '/' + initial_pos_filename + '_' + str(i)
         new_pos_filename_tmp = params['DEST_ROOT_PATH'] + '/' + initial_pos_filename + '_' + 'temp'
@@ -273,7 +272,8 @@ def semisupervised_selection(params):
         positive_lines_src, positive_lines_trg, negative_lines_src, negative_lines_trg, neutral_lines_src, neutral_lines_trg = \
             process_prediction_probs(prediction_probs, params['INSTANCES_TO_ADD'],
                                      pool_filename + '.' + params['SRC_LAN'],
-                                     pool_filename + '.' + params['TRG_LAN'])
+                                     pool_filename + '.' + params['TRG_LAN'],
+                                     verbose=params['VERBOSE'])
 
         print "Adding", len(positive_lines_src), "positive lines"
         print "Positive sample:", positive_lines_src[0], "---", positive_lines_trg[0]
