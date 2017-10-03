@@ -2,9 +2,9 @@ import numpy as np
 
 # Parameters
 ROOT_PATH = '/media/HDD_2TB/DATASETS/'
-base_path = ROOT_PATH + 'cnn_polarity/DATA/'
-vectors_path = base_path + 'glove.42B.300d.txt'
-dest_file = 'glove_300'
+base_path = ROOT_PATH + 'cnn_polarity/DATA/fasttext_embeddings/'
+vectors_path = base_path + 'wiki.en.vec'
+dest_file = 'fasttext.en'
 
 
 def glove2npy(glove_path, base_path_save, dest_file):
