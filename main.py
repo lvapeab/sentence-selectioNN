@@ -205,11 +205,11 @@ def semisupervised_selection(params):
         copyfile(pool_filename + '.' + params['SRC_LAN'], new_pool_filename + '.' + params['SRC_LAN'])
         copyfile(pool_filename + '.' + params['TRG_LAN'], new_pool_filename + '.' + params['TRG_LAN'])
 
-        if params['BILINGUAL_SELECTION']:
-            params = update_config_params(params,
-                                          new_pos_filename_tmp,
-                                          new_neg_filename,
-                                          new_pool_filename)
+        params = update_config_params(params,
+                                      new_pos_filename_tmp,
+                                      new_neg_filename,
+                                      new_pool_filename)
+
         params = process_files_binary_classification(params, i=i)
         ########### Load data
         dataset = build_dataset(params)
