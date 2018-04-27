@@ -1,11 +1,8 @@
 import logging
 import os
-import shutil
-import time
 import numpy as np
 from keras.layers import *
 from keras.models import model_from_json, Model
-from keras.optimizers import Adam, RMSprop, Nadam, Adadelta
 from keras.regularizers import l2
 from keras_wrapper.cnn_model import CNN_Model
 from keras_wrapper.extra.regularize import Regularize
@@ -45,7 +42,7 @@ class Text_Classification_Model(CNN_Model):
         self.vocabularies = vocabularies
 
         # Sets the model name and prepares the folders for storing the models
-        self.setName(model_name, store_path=store_path)
+        self.setName(model_name, models_path=store_path)
 
         # Prepare GLOVE embedding
         if params['SRC_PRETRAINED_VECTORS'] is not None:
@@ -93,54 +90,6 @@ class Text_Classification_Model(CNN_Model):
 
         self.setOptimizer()
 
-    def setOptimizer(self):
-
-        """
-            Sets a new optimizer for the Text_Classification_Model.
-        """
-
-        # compile differently depending if our model is 'Sequential' or 'Graph'
-        if self.verbose > 0:
-            logging.info("Preparing optimizer and compiling.")
-        if self.params['OPTIMIZER'].lower() == 'adam':
-            optimizer = Adam(lr=self.params['LR'], clipnorm=self.params['CLIP_C'])
-        elif self.params['OPTIMIZER'].lower() == 'rmsprop':
-            optimizer = RMSprop(lr=self.params['LR'], clipnorm=self.params['CLIP_C'])
-        elif self.params['OPTIMIZER'].lower() == 'nadam':
-            optimizer = Nadam(lr=self.params['LR'], clipnorm=self.params['CLIP_C'])
-        elif self.params['OPTIMIZER'].lower() == 'adadelta':
-            optimizer = Adadelta(lr=self.params['LR'], clipnorm=self.params['CLIP_C'])
-        else:
-            logging.info('\tWARNING: The modification of the LR is not implemented for the chosen optimizer.')
-            optimizer = self.params['OPTIMIZER']
-        self.model.compile(optimizer=optimizer, loss=self.params['LOSS'],
-                           sample_weight_mode='temporal' if self.params['SAMPLE_WEIGHTS'] else None)
-
-    def setName(self, model_name, store_path=None, clear_dirs=True):
-        """
-            Changes the name (identifier) of the Text_Classification_Model instance.
-        """
-        if model_name is None:
-            self.name = time.strftime("%Y-%m-%d") + '_' + time.strftime("%X")
-            create_dirs = False
-        else:
-            self.name = model_name
-            create_dirs = True
-
-        if store_path is None:
-            self.model_path = 'Models/' + self.name
-        else:
-            self.model_path = store_path
-
-        # Remove directories if existed
-        if clear_dirs:
-            if os.path.isdir(self.model_path):
-                shutil.rmtree(self.model_path)
-
-        # Create new ones
-        if create_dirs:
-            if not os.path.isdir(self.model_path):
-                os.makedirs(self.model_path)
 
     # ------------------------------------------------------- #
     #       VISUALIZATION
@@ -193,34 +142,35 @@ class Text_Classification_Model(CNN_Model):
                          dtype='int32')
         sentence_embedding_glove = Embedding(params['INPUT_SRC_VOCABULARY_SIZE'],
                                              params['SRC_TEXT_EMBEDDING_HIDDEN_SIZE'],
-                                             name='source_word_embedding_glove', weights=[embedding_weights],
+                                             name='source_word_embedding_glove',
+                                             weights=[embedding_weights],
                                              trainable=params['SRC_PRETRAINED_VECTORS_TRAINABLE'],
-                                             W_regularizer=l2(params['WEIGHT_DECAY']),
+                                             embeddings_regularizer=l2(params['WEIGHT_DECAY']),
                                              mask_zero=False)(src_text)
         convolutions = []
         for filter_len in params['FILTER_SIZES']:
-            conv = Convolution1D(nb_filter=params['NUM_FILTERS'],
-                                 filter_length=filter_len,
+            conv = Convolution1D(params['NUM_FILTERS'],
+                                 filter_len,
                                  activation=params['CNN_ACTIVATION'],
-                                 W_regularizer=l2(params['WEIGHT_DECAY']),
-                                 b_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding_glove)
+                                 kernel_regularizer=l2(params['WEIGHT_DECAY']),
+                                 bias_regularizer=l2(params['WEIGHT_DECAY']))(sentence_embedding_glove)
             pool = MaxPooling1D()(conv)
             # pool = Regularize(pool, params, name='pool_' + str(filter_len))
             convolutions.append(Flatten()(pool))
         if len(convolutions) > 1:
-            out_layer = merge(convolutions, mode='concat')
+            out_layer = Concatenate()(convolutions)
         else:
             out_layer = convolutions[0]
         # Optional deep ouput
         for i, (activation, dimension) in enumerate(params['DEEP_OUTPUT_LAYERS']):
             if activation.lower() == 'maxout':
                 out_layer = MaxoutDense(dimension,
-                                        W_regularizer=l2(params['WEIGHT_DECAY']),
+                                        kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                         name='maxout_%d' % i)(out_layer)
             else:
                 out_layer = Dense(dimension,
                                   activation=activation,
-                                  W_regularizer=l2(params['WEIGHT_DECAY']),
+                                  kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                   name=activation + '_%d' % i)(out_layer)
 
             out_layer = Regularize(out_layer, params, name='out_layer_' + str(i))
@@ -229,9 +179,9 @@ class Text_Classification_Model(CNN_Model):
         output = Dense(params['N_CLASSES'],
                        activation=params['CLASSIFIER_ACTIVATION'],
                        name=self.ids_outputs[0],
-                       W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
+                       kernel_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
 
-        self.model = Model(input=src_text, output=output)
+        self.model = Model(inputs=src_text, outputs=output)
 
     def BLSTM_Classifier(self, params):
 
@@ -250,21 +200,22 @@ class Text_Classification_Model(CNN_Model):
         # Source text
         src_text = Input(name=self.ids_inputs[0], batch_shape=tuple([None, None]), dtype='int32')
         sentence_embedding = Embedding(params['INPUT_SRC_VOCABULARY_SIZE'], params['SRC_TEXT_EMBEDDING_HIDDEN_SIZE'],
-                                       name='source_word_embedding', weights=[embedding_weights],
+                                       name='source_word_embedding',
+                                       weights=[embedding_weights],
                                        trainable=params['SRC_PRETRAINED_VECTORS_TRAINABLE'],
-                                       W_regularizer=l2(params['WEIGHT_DECAY']),
+                                       embeddings_regularizer=l2(params['WEIGHT_DECAY']),
                                        mask_zero=True)(src_text)
         sentence_embedding = Regularize(sentence_embedding, params, name='source_word_embedding')
 
         for activation, dimension in params['ADDITIONAL_EMBEDDING_LAYERS']:
             sentence_embedding = TimeDistributed(Dense(dimension, name='%s_1' % activation, activation=activation,
-                                                       W_regularizer=l2(params['WEIGHT_DECAY'])))(sentence_embedding)
+                                                       kernel_regularizer=l2(params['WEIGHT_DECAY'])))(sentence_embedding)
             sentence_embedding = Regularize(sentence_embedding, params, name='%s_1' % activation)
 
         out_layer = Bidirectional(LSTM(params['LSTM_ENCODER_HIDDEN_SIZE'],
-                                       W_regularizer=l2(params['WEIGHT_DECAY']),
-                                       U_regularizer=l2(params['WEIGHT_DECAY']),
-                                       b_regularizer=l2(params['WEIGHT_DECAY']),
+                                       kernel_regularizer=l2(params['WEIGHT_DECAY']),
+                                       recurrent_regularizer=l2(params['WEIGHT_DECAY']),
+                                       bias_regularizer=l2(params['WEIGHT_DECAY']),
                                        return_sequences=False),
                                   name='bidirectional_encoder')(sentence_embedding)
         out_layer = Regularize(out_layer, params, name='out_layer')
@@ -273,12 +224,12 @@ class Text_Classification_Model(CNN_Model):
         for i, (activation, dimension) in enumerate(params['DEEP_OUTPUT_LAYERS']):
             if activation.lower() == 'maxout':
                 out_layer = MaxoutDense(dimension,
-                                        W_regularizer=l2(params['WEIGHT_DECAY']),
+                                        kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                         name='maxout_%d' % i)(out_layer)
             else:
                 out_layer = Dense(dimension,
                                   activation=activation,
-                                  W_regularizer=l2(params['WEIGHT_DECAY']),
+                                  kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                   name=activation + '_%d' % i)(out_layer)
             out_layer = Regularize(out_layer, params, name=activation + '_%d' % i)
 
@@ -286,9 +237,9 @@ class Text_Classification_Model(CNN_Model):
         output = Dense(params['N_CLASSES'],
                        activation=params['CLASSIFIER_ACTIVATION'],
                        name=self.ids_outputs[0],
-                       W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
+                       kernel_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
 
-        self.model = Model(input=src_text, output=output)
+        self.model = Model(inputs=src_text, outputs=output)
 
     def Bilingual_CNN_Classifier(self, params):
 
@@ -309,42 +260,43 @@ class Text_Classification_Model(CNN_Model):
                          dtype='int32')
         src_sentence_embedding = Embedding(params['INPUT_SRC_VOCABULARY_SIZE'],
                                            params['SRC_TEXT_EMBEDDING_HIDDEN_SIZE'],
-                                           name='source_word_embedding', weights=[embedding_weights],
+                                           name='source_word_embedding',
+                                           weights=[embedding_weights],
                                            trainable=params['SRC_PRETRAINED_VECTORS_TRAINABLE'],
-                                           W_regularizer=l2(params['WEIGHT_DECAY']),
+                                           embeddings_regularizer=l2(params['WEIGHT_DECAY']),
                                            mask_zero=False)(src_text)
         src_sentence_embedding = Regularize(src_sentence_embedding, params, name='source_word_embedding')
 
         for activation, dimension in params['ADDITIONAL_EMBEDDING_LAYERS']:
             src_sentence_embedding = TimeDistributed(
                 Dense(dimension, name='%s_1_src' % activation, activation=activation,
-                      W_regularizer=l2(params['WEIGHT_DECAY'])))(src_sentence_embedding)
+                      kernel_regularizer=l2(params['WEIGHT_DECAY'])))(src_sentence_embedding)
             src_sentence_embedding = Regularize(src_sentence_embedding, params, name='%s_1_src' % activation)
 
         src_convolutions = []
         for filter_len in params['FILTER_SIZES']:
-            src_conv = Convolution1D(nb_filter=params['NUM_FILTERS'],
-                                     filter_length=filter_len,
+            src_conv = Convolution1D(params['NUM_FILTERS'],
+                                     filter_len,
                                      activation=params['CNN_ACTIVATION'],
-                                     W_regularizer=l2(params['WEIGHT_DECAY']),
-                                     b_regularizer=l2(params['WEIGHT_DECAY']))(src_sentence_embedding)
+                                     kernel_regularizer=l2(params['WEIGHT_DECAY']),
+                                     bias_regularizer=l2(params['WEIGHT_DECAY']))(src_sentence_embedding)
             src_pool = MaxPooling1D()(src_conv)
             # pool = Regularize(pool, params, name='pool_' + str(filter_len))
             src_convolutions.append(Flatten()(src_pool))
         if len(src_convolutions) > 1:
-            src_out_layer = merge(src_convolutions, mode='concat')
+            src_out_layer = Concatenate()(src_convolutions)
         else:
             src_out_layer = src_convolutions[0]
         # Optional deep ouput
         for i, (activation, dimension) in enumerate(params['DEEP_OUTPUT_LAYERS']):
             if activation.lower() == 'maxout':
                 src_out_layer = MaxoutDense(dimension,
-                                            W_regularizer=l2(params['WEIGHT_DECAY']),
+                                            kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                             name='maxout_%d_src' % i)(src_out_layer)
             else:
                 src_out_layer = Dense(dimension,
                                       activation=activation,
-                                      W_regularizer=l2(params['WEIGHT_DECAY']),
+                                      kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                       name=activation + '_%d_src' % i)(src_out_layer)
 
             src_out_layer = Regularize(src_out_layer, params, name='out_layer_%s_src' % str(i))
@@ -363,54 +315,55 @@ class Text_Classification_Model(CNN_Model):
                          dtype='int32')
         trg_sentence_embedding = Embedding(params['INPUT_TRG_VOCABULARY_SIZE'],
                                            params['TRG_TEXT_EMBEDDING_HIDDEN_SIZE'],
-                                           name='target_word_embedding', weights=[embedding_weights],
+                                           name='target_word_embedding',
+                                           weights=[embedding_weights],
                                            trainable=params['TRG_PRETRAINED_VECTORS_TRAINABLE'],
-                                           W_regularizer=l2(params['WEIGHT_DECAY']),
+                                           embeddings_regularizer=l2(params['WEIGHT_DECAY']),
                                            mask_zero=False)(trg_text)
         trg_sentence_embedding = Regularize(trg_sentence_embedding, params, name='target_word_embedding')
 
         for activation, dimension in params['ADDITIONAL_EMBEDDING_LAYERS']:
             trg_sentence_embedding = TimeDistributed(
                 Dense(dimension, name='%s_1_trg' % activation, activation=activation,
-                      W_regularizer=l2(params['WEIGHT_DECAY'])))(trg_sentence_embedding)
+                      kernel_regularizer=l2(params['WEIGHT_DECAY'])))(trg_sentence_embedding)
             trg_sentence_embedding = Regularize(trg_sentence_embedding, params, name='%s_1_trg' % activation)
 
         trg_convolutions = []
         for filter_len in params['FILTER_SIZES']:
-            trg_conv = Convolution1D(nb_filter=params['NUM_FILTERS'],
-                                     filter_length=filter_len,
+            trg_conv = Convolution1D(params['NUM_FILTERS'],
+                                     filter_len,
                                      activation=params['CNN_ACTIVATION'],
-                                     W_regularizer=l2(params['WEIGHT_DECAY']),
-                                     b_regularizer=l2(params['WEIGHT_DECAY']))(trg_sentence_embedding)
+                                     kernel_regularizer=l2(params['WEIGHT_DECAY']),
+                                     bias_regularizer=l2(params['WEIGHT_DECAY']))(trg_sentence_embedding)
             trg_pool = MaxPooling1D()(trg_conv)
             # pool = Regularize(pool, params, name='pool_' + str(filter_len))
             trg_convolutions.append(Flatten()(trg_pool))
         if len(trg_convolutions) > 1:
-            trg_out_layer = merge(trg_convolutions, mode='concat')
+            trg_out_layer = Concatenate()(trg_convolutions)
         else:
             trg_out_layer = trg_convolutions[0]
         # Optional deep ouput
         for i, (activation, dimension) in enumerate(params['DEEP_OUTPUT_LAYERS']):
             if activation.lower() == 'maxout':
                 trg_out_layer = MaxoutDense(dimension,
-                                            W_regularizer=l2(params['WEIGHT_DECAY']),
+                                            kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                             name='maxout_%d_trg' % i)(trg_out_layer)
             else:
                 trg_out_layer = Dense(dimension,
                                       activation=activation,
-                                      W_regularizer=l2(params['WEIGHT_DECAY']),
+                                      kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                       name=activation + '_%d_trg' % i)(trg_out_layer)
 
                 trg_out_layer = Regularize(trg_out_layer, params, name='out_layer_%s_trg' % str(i))
 
-        out_layer = merge([src_out_layer, trg_out_layer], mode='concat')
+        out_layer = Concatenate()([src_out_layer, trg_out_layer])
         # Softmax
         output = Dense(params['N_CLASSES'],
                        activation=params['CLASSIFIER_ACTIVATION'],
                        name=self.ids_outputs[0],
-                       W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
+                       kernel_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
 
-        self.model = Model(input=[src_text, trg_text], output=output)
+        self.model = Model(inputs=[src_text, trg_text], outputs=output)
 
     def Bilingual_BLSTM_Classifier(self, params):
 
@@ -430,22 +383,23 @@ class Text_Classification_Model(CNN_Model):
         src_text = Input(name=self.ids_inputs[0], batch_shape=tuple([None, None]), dtype='int32')
         src_sentence_embedding = Embedding(params['INPUT_SRC_VOCABULARY_SIZE'],
                                            params['SRC_TEXT_EMBEDDING_HIDDEN_SIZE'],
-                                           name='source_word_embedding', weights=[embedding_weights],
+                                           name='source_word_embedding',
+                                           weights=[embedding_weights],
                                            trainable=params['SRC_PRETRAINED_VECTORS_TRAINABLE'],
-                                           W_regularizer=l2(params['WEIGHT_DECAY']),
+                                           embeddings_regularizer=l2(params['WEIGHT_DECAY']),
                                            mask_zero=True)(src_text)
         src_sentence_embedding = Regularize(src_sentence_embedding, params, name='source_word_embedding')
 
         for activation, dimension in params['ADDITIONAL_EMBEDDING_LAYERS']:
             src_sentence_embedding = TimeDistributed(
                 Dense(dimension, name='%s_1_src' % activation, activation=activation,
-                      W_regularizer=l2(params['WEIGHT_DECAY'])))(src_sentence_embedding)
+                      kernel_regularizer=l2(params['WEIGHT_DECAY'])))(src_sentence_embedding)
             src_sentence_embedding = Regularize(src_sentence_embedding, params, name='%s_1_src' % activation)
 
         src_out_layer = Bidirectional(LSTM(params['LSTM_ENCODER_HIDDEN_SIZE'],
-                                           W_regularizer=l2(params['WEIGHT_DECAY']),
-                                           U_regularizer=l2(params['WEIGHT_DECAY']),
-                                           b_regularizer=l2(params['WEIGHT_DECAY']),
+                                           kernel_regularizer=l2(params['WEIGHT_DECAY']),
+                                           recurrent_regularizer=l2(params['WEIGHT_DECAY']),
+                                           bias_regularizer=l2(params['WEIGHT_DECAY']),
                                            return_sequences=False),
                                       name='bidirectional_encoder_src')(src_sentence_embedding)
         src_out_layer = Regularize(src_out_layer, params, name='out_layer_src')
@@ -454,12 +408,12 @@ class Text_Classification_Model(CNN_Model):
         for i, (activation, dimension) in enumerate(params['DEEP_OUTPUT_LAYERS']):
             if activation.lower() == 'maxout':
                 src_out_layer = MaxoutDense(dimension,
-                                            W_regularizer=l2(params['WEIGHT_DECAY']),
+                                            kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                             name='maxout_%d_src' % i)(src_out_layer)
             else:
                 src_out_layer = Dense(dimension,
                                       activation=activation,
-                                      W_regularizer=l2(params['WEIGHT_DECAY']),
+                                      kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                       name=activation + '_%d_src' % i)(src_out_layer)
             src_out_layer = Regularize(src_out_layer, params, name=activation + '_%d_src' % i)
 
@@ -475,22 +429,23 @@ class Text_Classification_Model(CNN_Model):
         trg_text = Input(name=self.ids_inputs[1], batch_shape=tuple([None, None]), dtype='int32')
         trg_sentence_embedding = Embedding(params['INPUT_TRG_VOCABULARY_SIZE'],
                                            params['TRG_TEXT_EMBEDDING_HIDDEN_SIZE'],
-                                           name='target_word_embedding', weights=[embedding_weights],
+                                           name='target_word_embedding',
+                                           weights=[embedding_weights],
                                            trainable=params['TRG_PRETRAINED_VECTORS_TRAINABLE'],
-                                           W_regularizer=l2(params['WEIGHT_DECAY']),
+                                           kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                            mask_zero=True)(trg_text)
         trg_sentence_embedding = Regularize(trg_sentence_embedding, params, name='target_word_embedding')
 
         for activation, dimension in params['ADDITIONAL_EMBEDDING_LAYERS']:
             trg_sentence_embedding = TimeDistributed(
                 Dense(dimension, name='%s_1_trg' % activation, activation=activation,
-                      W_regularizer=l2(params['WEIGHT_DECAY'])))(trg_sentence_embedding)
+                      kernel_regularizer=l2(params['WEIGHT_DECAY'])))(trg_sentence_embedding)
             trg_sentence_embedding = Regularize(trg_sentence_embedding, params, name='%s_1_trg' % activation)
 
         trg_out_layer = Bidirectional(LSTM(params['LSTM_ENCODER_HIDDEN_SIZE'],
-                                           W_regularizer=l2(params['WEIGHT_DECAY']),
-                                           U_regularizer=l2(params['WEIGHT_DECAY']),
-                                           b_regularizer=l2(params['WEIGHT_DECAY']),
+                                           kernel_regularizer=l2(params['WEIGHT_DECAY']),
+                                           recurrent_regularizer=l2(params['WEIGHT_DECAY']),
+                                           bias_regularizer=l2(params['WEIGHT_DECAY']),
                                            return_sequences=False),
                                       name='bidirectional_encoder_trg')(trg_sentence_embedding)
         trg_out_layer = Regularize(trg_out_layer, params, name='out_layer_trg')
@@ -499,23 +454,23 @@ class Text_Classification_Model(CNN_Model):
         for i, (activation, dimension) in enumerate(params['DEEP_OUTPUT_LAYERS']):
             if activation.lower() == 'maxout':
                 trg_out_layer = MaxoutDense(dimension,
-                                            W_regularizer=l2(params['WEIGHT_DECAY']),
+                                            kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                             name='maxout_%d_trg' % i)(trg_out_layer)
             else:
                 trg_out_layer = Dense(dimension,
                                       activation=activation,
-                                      W_regularizer=l2(params['WEIGHT_DECAY']),
+                                      kernel_regularizer=l2(params['WEIGHT_DECAY']),
                                       name=activation + '_%d_trg' % i)(trg_out_layer)
             trg_out_layer = Regularize(trg_out_layer, params, name=activation + '_%d_trg' % i)
 
-        out_layer = merge([src_out_layer, trg_out_layer], mode='concat')
+        out_layer = Concatenate()([src_out_layer, trg_out_layer])
         # Softmax
         output = Dense(params['N_CLASSES'],
                        activation=params['CLASSIFIER_ACTIVATION'],
                        name=self.ids_outputs[0],
-                       W_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
+                       kernel_regularizer=l2(params['WEIGHT_DECAY']))(out_layer)
 
-        self.model = Model(input=[src_text, trg_text], output=output)
+        self.model = Model(inputs=[src_text, trg_text], outputs=output)
 
     def __getstate__(self):
         """
